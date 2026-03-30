@@ -10,7 +10,9 @@ Aplicación web full-stack para gestionar tareas, construida con Node.js, Expres
 
 > Coming soon — deploy en Vercel + Railway
 
+![Task Manager App](docs/screenshot.png)
 ---
+
 
 ## ✨ Funcionalidades
 
