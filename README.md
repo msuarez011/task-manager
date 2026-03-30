@@ -35,7 +35,7 @@ Aplicación web full-stack para gestionar tareas, construida con Node.js, Expres
 ---
 
 ## 📁 Estructura del Proyecto
----
+```
 task-manager/
 ├── backend/
 │   ├── src/
@@ -62,6 +62,7 @@ task-manager/
 ├── .gitignore
 └── README.md
 ```
+
 
 ---
 
