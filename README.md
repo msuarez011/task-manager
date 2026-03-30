@@ -35,7 +35,7 @@ Aplicación web full-stack para gestionar tareas, construida con Node.js, Expres
 ---
 
 ## 📁 Estructura del Proyecto
-```
+---
 task-manager/
 ├── backend/
 │   ├── src/
@@ -46,13 +46,21 @@ task-manager/
 │   │   └── index.js
 │   ├── .env.example
 │   ├── .gitignore
+│   ├── package-lock.json
 │   └── package.json
-└── frontend/
-    ├── src/
-    │   ├── App.jsx
-    │   └── App.css
-    ├── .gitignore
-    └── package.json
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── App.jsx
+│   │   └── App.css
+│   ├── .gitignore
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   └── vite.config.js
+├── .gitignore
+└── README.md
 ```
 
 ---
