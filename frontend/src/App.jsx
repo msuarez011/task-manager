@@ -1,14 +1,19 @@
 /**
  * @file App.jsx
  * @description Componente principal del Task Manager.
- * Gestiona autenticación con Supabase Auth y operaciones CRUD de tareas.
- * Las rutas están protegidas — solo usuarios autenticados acceden a las tareas.
+ * Usa lucide-react para iconos profesionales.
+ * Selector de prioridad visual con iconos y colores.
  * @author Marcelo Suárez
  * @date 2026-03-31
  */
 
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import {
+  CheckSquare, Square, Trash2, Plus, LogOut,
+  AlertCircle, AlertTriangle, CheckCircle2,
+  ClipboardList, Loader2, PartyPopper
+} from 'lucide-react'
 import { supabase } from './supabaseClient'
 import Auth from './components/Auth'
 import './App.css'
@@ -16,12 +21,12 @@ import './App.css'
 const API_URL = import.meta.env.VITE_API_URL + '/tasks'
 
 /**
- * Colores y etiquetas asociados a cada nivel de prioridad.
+ * Configuración visual de cada nivel de prioridad.
  */
-const PRIORITY_COLORS = {
-  high:   { bg: '#ff6b6b', label: 'Alta' },
-  medium: { bg: '#ffd93d', label: 'Media' },
-  low:    { bg: '#6bcb77', label: 'Baja' }
+const PRIORITIES = {
+  high:   { label: 'Alta',  color: '#ff6b6b', bg: 'rgba(255,107,107,0.12)', Icon: AlertCircle },
+  medium: { label: 'Media', color: '#ffd93d', bg: 'rgba(255,217,61,0.12)',  Icon: AlertTriangle },
+  low:    { label: 'Baja',  color: '#6bcb77', bg: 'rgba(107,203,119,0.12)', Icon: CheckCircle2 }
 }
 
 function App() {
@@ -34,37 +39,26 @@ function App() {
   const [error, setError]       = useState('')
   const [deleteId, setDeleteId] = useState(null)
 
-  // Escuchar cambios de sesión de Supabase Auth
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setLoading(false)
     })
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
     })
-
     return () => subscription.unsubscribe()
   }, [])
 
-  // Cargar tareas cuando hay sesión activa
   useEffect(() => {
     if (session) fetchTasks()
   }, [session])
 
-  /**
-   * Obtiene el token JWT del usuario actual para autorizar peticiones al backend.
-   * @returns {Promise<string>} Token JWT
-   */
   const getAuthHeader = async () => {
     const { data: { session } } = await supabase.auth.getSession()
     return { Authorization: `Bearer ${session.access_token}` }
   }
 
-  /**
-   * Obtiene todas las tareas del usuario autenticado.
-   */
   const fetchTasks = async () => {
     try {
       const headers = await getAuthHeader()
@@ -75,13 +69,9 @@ function App() {
     }
   }
 
-  /**
-   * Crea una nueva tarea con título y prioridad.
-   */
   const createTask = async () => {
     if (!title.trim()) return setError('El título no puede estar vacío.')
     if (title.trim().length > 200) return setError('Máximo 200 caracteres.')
-
     try {
       setSaving(true)
       setError('')
@@ -97,29 +87,17 @@ function App() {
     }
   }
 
-  /**
-   * Invierte el estado completed con optimistic update.
-   * @param {string} id - UUID de la tarea
-   */
   const toggleTask = async (id) => {
-    setTasks(prev =>
-      prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t)
-    )
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t))
     try {
       const headers = await getAuthHeader()
       await axios.patch(`${API_URL}/${id}/toggle`, {}, { headers })
     } catch {
-      setTasks(prev =>
-        prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t)
-      )
+      setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t))
       setError('Error al actualizar la tarea.')
     }
   }
 
-  /**
-   * Elimina una tarea tras confirmación.
-   * @param {string} id - UUID de la tarea
-   */
   const deleteTask = async (id) => {
     try {
       setError('')
@@ -132,9 +110,6 @@ function App() {
     }
   }
 
-  /**
-   * Cierra la sesión del usuario actual.
-   */
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setTasks([])
@@ -143,32 +118,37 @@ function App() {
   const pending   = tasks.filter(t => !t.completed).length
   const completed = tasks.filter(t => t.completed).length
 
-  // Mostrar pantalla de carga inicial
   if (loading) return (
     <div className="app">
       <div className="card">
-        <p className="empty">⏳ Cargando...</p>
+        <p className="empty">
+          <Loader2 size={20} className="spin" /> Cargando...
+        </p>
       </div>
     </div>
   )
 
-  // Mostrar Auth si no hay sesión
   if (!session) return <Auth />
 
   return (
     <div className="app">
       <div className="card">
 
-        {/* Header con botón de logout */}
+        {/* Header */}
         <div className="header">
-          <h1>📝 Task Manager</h1>
+          <div className="header-top">
+            <div className="header-title">
+              <ClipboardList size={24} color="#7c3aed" />
+              <h1>Task Manager</h1>
+            </div>
+            <button className="btn-logout" onClick={handleLogout} aria-label="Cerrar sesión">
+              <LogOut size={16} />
+            </button>
+          </div>
           <p className="subtitle">Organiza tu día</p>
-          <button className="btn-logout" onClick={handleLogout}>
-            Cerrar sesión
-          </button>
         </div>
 
-        {/* Contador */}
+        {/* Stats */}
         <div className="stats">
           <div className="stat">
             <span className="stat-number">{tasks.length}</span>
@@ -187,7 +167,8 @@ function App() {
         {/* Error banner */}
         {error && (
           <div className="error-banner">
-            ⚠️ {error}
+            <AlertCircle size={16} />
+            {error}
             <button className="error-close" onClick={() => setError('')}>✕</button>
           </div>
         )}
@@ -203,60 +184,77 @@ function App() {
             onKeyDown={(e) => e.key === 'Enter' && !saving && createTask()}
             aria-label="Nueva tarea"
           />
-          <select
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-            className="priority-select"
-            aria-label="Prioridad"
-          >
-            <option value="high">🔴 Alta</option>
-            <option value="medium">🟡 Media</option>
-            <option value="low">🟢 Baja</option>
-          </select>
           <button
             className="btn-add"
             onClick={createTask}
             disabled={saving}
             aria-label="Agregar tarea"
           >
-            {saving ? '...' : '+'}
+            {saving ? <Loader2 size={20} className="spin" /> : <Plus size={20} />}
           </button>
+        </div>
+
+        {/* Selector de prioridad */}
+        <div className="priority-selector">
+          {Object.entries(PRIORITIES).map(([key, { label, color, bg, Icon }]) => (
+            <button
+              key={key}
+              className={`priority-btn ${priority === key ? 'active' : ''}`}
+              style={priority === key ? { borderColor: color, background: bg, color } : {}}
+              onClick={() => setPriority(key)}
+              aria-label={`Prioridad ${label}`}
+            >
+              <Icon size={14} />
+              {label}
+            </button>
+          ))}
         </div>
 
         {/* Lista de tareas */}
         {tasks.length === 0 ? (
           <div className="empty-state">
-            <p className="empty-icon">🎉</p>
+            <PartyPopper size={40} color="#7c3aed" />
             <p className="empty-title">¡Todo listo por hoy!</p>
             <p className="empty-subtitle">Agrega una tarea para empezar</p>
           </div>
         ) : (
           <ul className="task-list">
-            {tasks.map(task => (
-              <li key={task.id} className={`task-item ${task.completed ? 'completed' : ''}`}>
-                <button
-                  className="btn-check"
-                  onClick={() => toggleTask(task.id)}
-                  aria-label={task.completed ? 'Marcar pendiente' : 'Marcar completada'}
-                >
-                  {task.completed ? '✅' : '⬜'}
-                </button>
-                <span className="task-title">{task.title}</span>
-                <span
-                  className="priority-badge"
-                  style={{ backgroundColor: PRIORITY_COLORS[task.priority]?.bg || '#ccc' }}
-                >
-                  {PRIORITY_COLORS[task.priority]?.label || task.priority}
-                </span>
-                <button
-                  className="btn-delete"
-                  onClick={() => setDeleteId(task.id)}
-                  aria-label="Eliminar tarea"
-                >
-                  🗑️
-                </button>
-              </li>
-            ))}
+            {tasks.map(task => {
+              const p = PRIORITIES[task.priority] || PRIORITIES.medium
+              const PIcon = p.Icon
+              return (
+                <li key={task.id} className={`task-item ${task.completed ? 'completed' : ''}`}>
+                  <button
+                    className="btn-check"
+                    onClick={() => toggleTask(task.id)}
+                    aria-label={task.completed ? 'Marcar pendiente' : 'Marcar completada'}
+                  >
+                    {task.completed
+                      ? <CheckSquare size={20} color="#10b981" />
+                      : <Square size={20} color="#64748b" />}
+                  </button>
+
+                  <span className="task-title">{task.title}</span>
+
+                  {/* Badge de prioridad con icono */}
+                  <span
+                    className="priority-badge"
+                    style={{ color: p.color, background: p.bg }}
+                  >
+                    <PIcon size={12} />
+                    {p.label}
+                  </span>
+
+                  <button
+                    className="btn-delete"
+                    onClick={() => setDeleteId(task.id)}
+                    aria-label="Eliminar tarea"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </li>
+              )
+            })}
           </ul>
         )}
 
@@ -264,6 +262,7 @@ function App() {
         {deleteId && (
           <div className="modal-overlay">
             <div className="modal">
+              <Trash2 size={32} color="#ef4444" style={{ margin: '0 auto 12px' }} />
               <p>¿Eliminar esta tarea?</p>
               <div className="modal-actions">
                 <button className="btn-confirm" onClick={() => deleteTask(deleteId)}>

@@ -7,6 +7,7 @@
 
 import { useState } from 'react'
 import { supabase } from '../supabaseClient'
+import { Eye, EyeOff } from 'lucide-react'
 
 export default function Auth() {
   const [isLogin, setIsLogin]         = useState(true)
@@ -385,7 +386,7 @@ export default function Auth() {
               <input
                 className="auth-input"
                 type="text"
-                placeholder="Marcelo Suárez"
+                placeholder="Tu nombre Completo"
                 value={name}
                 onChange={(e) => { setName(e.target.value); setError('') }}
               />
@@ -421,7 +422,7 @@ export default function Auth() {
                 type="button"
                 aria-label="Mostrar contraseña"
               >
-                {showPass ? '🙈' : '👁️'}
+                {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
             {!isLogin && password.length > 0 && (
