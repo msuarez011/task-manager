@@ -1,25 +1,23 @@
 /**
  * @file tasksController.js
  * @description Controlador REST para el recurso Tasks.
- * Maneja las operaciones CRUD usando Supabase como base de datos.
+ * Filtra tareas por user_id para garantizar privacidad entre usuarios.
  * @author Marcelo Suárez
- * @date 2026-03-30
+ * @date 2026-03-31
  */
 
 import { supabase } from '../config/supabase.js'
 
 /**
- * Obtiene todas las tareas ordenadas por fecha de creación descendente.
+ * Obtiene todas las tareas del usuario autenticado.
  * @route GET /api/tasks
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- * @returns {Array} Lista de tareas
  */
 export const getTasks = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('tasks')
       .select('*')
+      .eq('user_id', req.userId)
       .order('created_at', { ascending: false })
 
     if (error) throw error
@@ -30,12 +28,9 @@ export const getTasks = async (req, res) => {
 }
 
 /**
- * Crea una nueva tarea en la base de datos.
+ * Crea una nueva tarea asociada al usuario autenticado.
  * @route POST /api/tasks
- * @param {import('express').Request} req - Body: { title: string, priority?: 'low'|'medium'|'high' }
- * @param {import('express').Response} res
- * @returns {Object} Tarea creada
- * @throws {400} Si el título está vacío
+ * @param {Object} req.body - { title: string, priority?: 'low'|'medium'|'high' }
  */
 export const createTask = async (req, res) => {
   try {
@@ -47,7 +42,7 @@ export const createTask = async (req, res) => {
 
     const { data, error } = await supabase
       .from('tasks')
-      .insert([{ title: title.trim(), priority }])
+      .insert([{ title: title.trim(), priority, user_id: req.userId }])
       .select()
       .single()
 
@@ -59,35 +54,25 @@ export const createTask = async (req, res) => {
 }
 
 /**
- * Invierte el estado completed de una tarea (toggle).
- * @route PATCH /api/tasks/:id/toggle
- * @param {import('express').Request} req - Params: { id: UUID }
- * @param {import('express').Response} res
- * @returns {Object} Tarea actualizada
- * @throws {404} Si la tarea no existe
+ * Actualiza el estado completed de una tarea del usuario autenticado.
+ * @route PATCH /api/tasks/:id
+ * @param {Object} req.body - { completed: boolean }
  */
 export const toggleTask = async (req, res) => {
   try {
     const { id } = req.params
-
-    // Consulta previa para obtener el estado actual antes de invertirlo
-    const { data: task, error: fetchError } = await supabase
-      .from('tasks')
-      .select('completed')
-      .eq('id', id)
-      .single()
-
-    if (fetchError) throw fetchError
-    if (!task) return res.status(404).json({ error: 'Tarea no encontrada' })
+    const { completed } = req.body
 
     const { data, error } = await supabase
       .from('tasks')
-      .update({ completed: !task.completed })
+      .update({ completed })
       .eq('id', id)
+      .eq('user_id', req.userId)
       .select()
       .single()
 
     if (error) throw error
+    if (!data) return res.status(404).json({ error: 'Tarea no encontrada' })
     res.json(data)
   } catch (error) {
     res.status(500).json({ error: error.message })
@@ -95,11 +80,8 @@ export const toggleTask = async (req, res) => {
 }
 
 /**
- * Elimina una tarea por su ID.
+ * Elimina una tarea del usuario autenticado.
  * @route DELETE /api/tasks/:id
- * @param {import('express').Request} req - Params: { id: UUID }
- * @param {import('express').Response} res
- * @returns {204} Sin contenido si fue exitoso
  */
 export const deleteTask = async (req, res) => {
   try {
@@ -109,6 +91,7 @@ export const deleteTask = async (req, res) => {
       .from('tasks')
       .delete()
       .eq('id', id)
+      .eq('user_id', req.userId)
 
     if (error) throw error
     res.status(204).send()
