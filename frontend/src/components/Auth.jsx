@@ -1,7 +1,6 @@
 /**
  * @file Auth.jsx
- * @description Componente de autenticación moderno con diseño 2026.
- * Maneja login y registro con animaciones y validaciones.
+ * @description Componente de autenticación con diseño moderno 2026.
  * @author Marcelo Suárez
  * @date 2026-03-31
  */
@@ -10,30 +9,46 @@ import { useState } from 'react'
 import { supabase } from '../supabaseClient'
 
 export default function Auth() {
-  const [isLogin, setIsLogin]   = useState(true)
-  const [email, setEmail]       = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading]   = useState(false)
-  const [error, setError]       = useState('')
-  const [message, setMessage]   = useState('')
+  const [isLogin, setIsLogin]         = useState(true)
+  const [email, setEmail]             = useState('')
+  const [password, setPassword]       = useState('')
+  const [confirmPassword, setConfirm] = useState('')
+  const [name, setName]               = useState('')
+  const [loading, setLoading]         = useState(false)
+  const [error, setError]             = useState('')
+  const [message, setMessage]         = useState('')
+  const [showPass, setShowPass]       = useState(false)
 
   const handleSubmit = async () => {
-    if (!email || !password) return setError('Completa todos los campos.')
-    if (password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres.')
-    setLoading(true)
     setError('')
     setMessage('')
+    if (!email || !password) return setError('Completa todos los campos.')
+    if (!email.includes('@')) return setError('Ingresa un correo válido.')
+    if (password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres.')
+    if (!isLogin && !name.trim()) return setError('Ingresa tu nombre.')
+    if (!isLogin && password !== confirmPassword) return setError('Las contraseñas no coinciden.')
+
+    setLoading(true)
     try {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
       } else {
-        const { error } = await supabase.auth.signUp({ email, password })
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: name.trim() } }
+        })
         if (error) throw error
-        setMessage('¡Cuenta creada! Revisa tu correo para confirmar.')
+        setMessage('¡Cuenta creada! Ya puedes iniciar sesión.')
+        setIsLogin(true)
       }
     } catch (err) {
-      setError(err.message || 'Error de autenticación.')
+      const msg = err.message || ''
+      if (msg.includes('Invalid login')) setError('Correo o contraseña incorrectos.')
+      else if (msg.includes('already registered')) setError('Este correo ya está registrado.')
+      else if (msg.includes('not confirmed')) setError('Confirma tu correo antes de iniciar sesión.')
+      else setError(msg || 'Error de autenticación.')
     } finally {
       setLoading(false)
     }
@@ -45,6 +60,8 @@ export default function Auth() {
     setMessage('')
     setEmail('')
     setPassword('')
+    setConfirm('')
+    setName('')
   }
 
   return (
@@ -61,8 +78,7 @@ export default function Auth() {
           justify-content: center;
           background: #080810;
           font-family: 'DM Sans', sans-serif;
-          overflow: hidden;
-          position: relative;
+          padding: 20px;
         }
 
         .auth-bg {
@@ -70,6 +86,7 @@ export default function Auth() {
           inset: 0;
           z-index: 0;
           overflow: hidden;
+          pointer-events: none;
         }
 
         .auth-bg::before {
@@ -95,37 +112,37 @@ export default function Auth() {
         }
 
         @keyframes drift1 {
-          from { transform: translate(0, 0) scale(1); }
-          to   { transform: translate(60px, 40px) scale(1.1); }
+          from { transform: translate(0,0) scale(1); }
+          to   { transform: translate(60px,40px) scale(1.1); }
         }
 
         @keyframes drift2 {
-          from { transform: translate(0, 0) scale(1); }
-          to   { transform: translate(-40px, -60px) scale(1.15); }
+          from { transform: translate(0,0) scale(1); }
+          to   { transform: translate(-40px,-60px) scale(1.15); }
         }
 
         .auth-grid {
           position: fixed;
           inset: 0;
-          background-image: 
+          background-image:
             linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
             linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
           background-size: 60px 60px;
           z-index: 0;
+          pointer-events: none;
         }
 
         .auth-card {
           position: relative;
           z-index: 1;
           width: 100%;
-          max-width: 420px;
-          margin: 20px;
+          max-width: 400px;
           background: rgba(255,255,255,0.03);
           border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 24px;
-          padding: 48px 40px;
+          border-radius: 28px;
+          padding: 44px 36px;
           backdrop-filter: blur(20px);
-          animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
         }
 
         @keyframes slideUp {
@@ -141,14 +158,14 @@ export default function Auth() {
         }
 
         .auth-logo-icon {
-          width: 40px;
-          height: 40px;
+          width: 42px;
+          height: 42px;
           background: linear-gradient(135deg, #6366f1, #ec4899);
-          border-radius: 10px;
+          border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 18px;
+          font-size: 20px;
         }
 
         .auth-logo-text {
@@ -156,22 +173,22 @@ export default function Auth() {
           font-size: 18px;
           font-weight: 700;
           color: #fff;
-          letter-spacing: -0.3px;
         }
 
         .auth-title {
           font-family: 'Syne', sans-serif;
-          font-size: 28px;
-          font-weight: 800;
+          font-size: 26px;
+          font-weight: 700;
           color: #fff;
-          letter-spacing: -0.5px;
+          letter-spacing: -0.3px;
           margin-bottom: 6px;
+          text-transform: none;
         }
 
         .auth-subtitle {
           font-size: 14px;
-          color: rgba(255,255,255,0.4);
-          margin-bottom: 36px;
+          color: rgba(255,255,255,0.35);
+          margin-bottom: 28px;
           font-weight: 300;
         }
 
@@ -183,15 +200,17 @@ export default function Auth() {
           display: block;
           font-size: 12px;
           font-weight: 500;
-          color: rgba(255,255,255,0.5);
+          color: rgba(255,255,255,0.45);
           letter-spacing: 0.5px;
           text-transform: uppercase;
           margin-bottom: 8px;
         }
 
+        .auth-input-wrap { position: relative; }
+
         .auth-input {
           width: 100%;
-          padding: 14px 16px;
+          padding: 13px 16px;
           background: rgba(255,255,255,0.05);
           border: 1px solid rgba(255,255,255,0.08);
           border-radius: 12px;
@@ -207,12 +226,55 @@ export default function Auth() {
         .auth-input:focus {
           border-color: rgba(99,102,241,0.6);
           background: rgba(99,102,241,0.08);
-          box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+          box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+
+        .auth-input.has-toggle { padding-right: 48px; }
+
+        .auth-toggle-pass {
+          position: absolute;
+          right: 14px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          color: rgba(255,255,255,0.3);
+          cursor: pointer;
+          font-size: 16px;
+          transition: color 0.2s;
+          padding: 4px;
+        }
+
+        .auth-toggle-pass:hover { color: rgba(255,255,255,0.7); }
+
+        .password-strength {
+          display: flex;
+          gap: 4px;
+          margin-top: 8px;
+        }
+
+        .strength-bar {
+          flex: 1;
+          height: 3px;
+          border-radius: 2px;
+          background: rgba(255,255,255,0.08);
+          transition: background 0.3s;
+        }
+
+        .strength-bar.weak   { background: #ef4444; }
+        .strength-bar.medium { background: #f59e0b; }
+        .strength-bar.strong { background: #10b981; }
+
+        .strength-label {
+          font-size: 11px;
+          color: rgba(255,255,255,0.3);
+          margin-top: 4px;
+          text-align: right;
         }
 
         .auth-btn {
           width: 100%;
-          padding: 15px;
+          padding: 14px;
           margin-top: 8px;
           background: linear-gradient(135deg, #6366f1, #8b5cf6);
           border: none;
@@ -221,47 +283,20 @@ export default function Auth() {
           font-family: 'Syne', sans-serif;
           font-size: 15px;
           font-weight: 700;
-          letter-spacing: 0.3px;
           cursor: pointer;
           transition: all 0.2s;
-          position: relative;
-          overflow: hidden;
+          box-shadow: 0 4px 20px rgba(99,102,241,0.3);
         }
 
-        .auth-btn::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: rgba(255,255,255,0);
-          transition: background 0.2s;
-        }
-
-        .auth-btn:hover::after { background: rgba(255,255,255,0.08); }
+        .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(99,102,241,0.4); }
         .auth-btn:active { transform: scale(0.98); }
-        .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .auth-divider {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin: 24px 0;
-        }
-
-        .auth-divider-line {
-          flex: 1;
-          height: 1px;
-          background: rgba(255,255,255,0.08);
-        }
-
-        .auth-divider-text {
-          font-size: 12px;
-          color: rgba(255,255,255,0.25);
-        }
+        .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
         .auth-switch {
           text-align: center;
+          margin-top: 20px;
           font-size: 14px;
-          color: rgba(255,255,255,0.35);
+          color: rgba(255,255,255,0.3);
         }
 
         .auth-switch-btn {
@@ -275,6 +310,7 @@ export default function Auth() {
           text-decoration: underline;
           text-underline-offset: 3px;
           transition: color 0.2s;
+          margin-left: 4px;
         }
 
         .auth-switch-btn:hover { color: #a5b4fc; }
@@ -287,9 +323,6 @@ export default function Auth() {
           color: #fca5a5;
           font-size: 13px;
           margin-bottom: 16px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
         }
 
         .auth-success {
@@ -300,17 +333,26 @@ export default function Auth() {
           color: #86efac;
           font-size: 13px;
           margin-bottom: 16px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
+        }
+
+        .auth-terms {
+          font-size: 12px;
+          color: rgba(255,255,255,0.2);
+          text-align: center;
+          margin-top: 16px;
+          line-height: 1.5;
         }
 
         .auth-footer {
           text-align: center;
-          margin-top: 28px;
+          margin-top: 24px;
           font-size: 11px;
-          color: rgba(255,255,255,0.15);
-          letter-spacing: 0.3px;
+          color: rgba(255,255,255,0.12);
+        }
+
+        @media (max-width: 480px) {
+          .auth-card { padding: 36px 24px; }
+          .auth-title { font-size: 22px; }
         }
       `}</style>
 
@@ -319,6 +361,7 @@ export default function Auth() {
         <div className="auth-grid" />
 
         <div className="auth-card">
+
           <div className="auth-logo">
             <div className="auth-logo-icon">📝</div>
             <span className="auth-logo-text">Task Manager</span>
@@ -330,11 +373,24 @@ export default function Auth() {
           <p className="auth-subtitle">
             {isLogin
               ? 'Ingresa tus credenciales para continuar'
-              : 'Empieza a organizar tu día en segundos'}
+              : 'Únete y empieza a organizar tu día'}
           </p>
 
-          {error && <div className="auth-error">⚠️ {error}</div>}
+          {error   && <div className="auth-error">⚠️ {error}</div>}
           {message && <div className="auth-success">✅ {message}</div>}
+
+          {!isLogin && (
+            <div className="auth-field">
+              <label className="auth-label">Nombre completo</label>
+              <input
+                className="auth-input"
+                type="text"
+                placeholder="Marcelo Suárez"
+                value={name}
+                onChange={(e) => { setName(e.target.value); setError('') }}
+              />
+            </div>
+          )}
 
           <div className="auth-field">
             <label className="auth-label">Correo electrónico</label>
@@ -350,28 +406,65 @@ export default function Auth() {
 
           <div className="auth-field">
             <label className="auth-label">Contraseña</label>
-            <input
-              className="auth-input"
-              type="password"
-              placeholder="Mínimo 6 caracteres"
-              value={password}
-              onChange={(e) => { setPassword(e.target.value); setError('') }}
-              onKeyDown={(e) => e.key === 'Enter' && !loading && handleSubmit()}
-            />
+            <div className="auth-input-wrap">
+              <input
+                className="auth-input has-toggle"
+                type={showPass ? 'text' : 'password'}
+                placeholder="Mínimo 6 caracteres"
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setError('') }}
+                onKeyDown={(e) => e.key === 'Enter' && !loading && handleSubmit()}
+              />
+              <button
+                className="auth-toggle-pass"
+                onClick={() => setShowPass(!showPass)}
+                type="button"
+                aria-label="Mostrar contraseña"
+              >
+                {showPass ? '🙈' : '👁️'}
+              </button>
+            </div>
+            {!isLogin && password.length > 0 && (
+              <>
+                <div className="password-strength">
+                  <div className={`strength-bar ${password.length >= 1 ? (password.length < 6 ? 'weak' : password.length < 10 ? 'medium' : 'strong') : ''}`} />
+                  <div className={`strength-bar ${password.length >= 6 ? (password.length < 10 ? 'medium' : 'strong') : ''}`} />
+                  <div className={`strength-bar ${password.length >= 10 ? 'strong' : ''}`} />
+                </div>
+                <p className="strength-label">
+                  {password.length < 6 ? 'Débil' : password.length < 10 ? 'Media' : 'Fuerte'}
+                </p>
+              </>
+            )}
           </div>
+
+          {!isLogin && (
+            <div className="auth-field">
+              <label className="auth-label">Confirmar contraseña</label>
+              <input
+                className="auth-input"
+                type={showPass ? 'text' : 'password'}
+                placeholder="Repite tu contraseña"
+                value={confirmPassword}
+                onChange={(e) => { setConfirm(e.target.value); setError('') }}
+                onKeyDown={(e) => e.key === 'Enter' && !loading && handleSubmit()}
+              />
+            </div>
+          )}
 
           <button className="auth-btn" onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Procesando...' : isLogin ? 'Iniciar sesión' : 'Crear cuenta'}
+            {loading ? 'Procesando...' : isLogin ? 'Iniciar sesión' : 'Crear cuenta gratis'}
           </button>
 
-          <div className="auth-divider">
-            <div className="auth-divider-line" />
-            <span className="auth-divider-text">o</span>
-            <div className="auth-divider-line" />
-          </div>
+          {!isLogin && (
+            <p className="auth-terms">
+              Al registrarte aceptas usar esta app con fines personales.
+            </p>
+          )}
 
+          {/* Link para cambiar modo — abajo del botón */}
           <div className="auth-switch">
-            {isLogin ? '¿No tienes cuenta? ' : '¿Ya tienes cuenta? '}
+            {isLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}
             <button className="auth-switch-btn" onClick={switchMode}>
               {isLogin ? 'Regístrate gratis' : 'Inicia sesión'}
             </button>
