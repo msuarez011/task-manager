@@ -1,16 +1,24 @@
-const express = require('express')
-const router = express.Router()
+/**
+ * @file tasks.js
+ * @description Define las rutas REST para el recurso Tasks
+ * y las conecta con sus controladores correspondientes.
+ * @author Marcelo Suárez
+ * @date 2026-03-30
+ */
 
-const {
+import express from 'express'
+import {
   getTasks,
   createTask,
   toggleTask,
   deleteTask
-} = require('../controllers/tasksController')
+} from '../controllers/tasksController.js'
 
-router.get('/', getTasks)
-router.post('/', createTask)
-router.patch('/:id/toggle', toggleTask)
-router.delete('/:id', deleteTask)
+const router = express.Router()
 
-module.exports = router
+router.get('/', getTasks)           // GET    /api/tasks
+router.post('/', createTask)        // POST   /api/tasks
+router.patch('/:id/toggle', toggleTask) // PATCH  /api/tasks/:id/toggle
+router.delete('/:id', deleteTask)   // DELETE /api/tasks/:id
+
+export default router

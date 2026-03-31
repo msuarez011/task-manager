@@ -1,25 +1,26 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+/**
+ * @file index.js
+ * @description Punto de entrada del servidor Express.
+ * Configura middlewares, rutas y levanta el servidor HTTP.
+ * @author Marcelo Suárez
+ * @date 2026-03-30
+ */
 
-const taskRoutes = require('./routes/tasks');
+import 'dotenv/config'
+import express from 'express'
+import cors from 'cors'
+import taskRoutes from './routes/tasks.js'
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+const app = express()
+const PORT = process.env.PORT || 3000
 
-// Middlewares
-app.use(cors());
-app.use(express.json());
+// Middlewares globales
+app.use(cors())
+app.use(express.json())
 
 // Rutas
-app.use('/api/tasks', taskRoutes);
+app.use('/api/tasks', taskRoutes)
 
-// Ruta de prueba
-app.get('/', (req, res) => {
-  res.json({ message: 'Servidor funcionando correctamente' });
-});
-
-// Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+  console.log(`Servidor corriendo en puerto ${PORT}`)
+})

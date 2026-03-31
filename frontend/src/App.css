@@ -1,5 +1,14 @@
 /* ===== RESET & BASE ===== */
-* {
+/*
+ * @file App.css
+ * @description Estilos globales del Task Manager.
+ * Diseño mobile-first con glassmorphism, animaciones suaves
+ * y soporte para modal, badges de prioridad y mensajes de error.
+ * @author Marcelo Suárez
+ * @date 2026-03-30
+ */
+
+ * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -15,7 +24,10 @@ body {
   padding: 20px 16px;
 }
 
-/* ===== CARD PRINCIPAL ===== */
+/* ===== CARD PRINCIPAL =====
+ * Contenedor glassmorphism con blur, borde semitransparente
+ * y animación de entrada slideUp al cargar la página.
+ */
 .app {
   width: 100%;
   max-width: 480px;
@@ -32,6 +44,7 @@ body {
   animation: slideUp 0.4s ease;
 }
 
+/* Animación de entrada de la card */
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(30px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -56,7 +69,10 @@ body {
   margin-top: 4px;
 }
 
-/* ===== STATS ===== */
+/* ===== STATS =====
+ * Barra de contadores: total, pendientes y completadas.
+ * Cada número tiene color semántico (amarillo=pendiente, verde=completada).
+ */
 .stats {
   display: flex;
   justify-content: space-around;
@@ -80,6 +96,7 @@ body {
   color: #f1f5f9;
 }
 
+/* Color semántico por estado */
 .stat-number.pending { color: #f59e0b; }
 .stat-number.done    { color: #10b981; }
 
@@ -90,7 +107,10 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* ===== INPUT ===== */
+/* ===== INPUT GROUP =====
+ * Fila con input de texto, selector de prioridad y botón agregar.
+ * El input ocupa el espacio restante (flex: 1).
+ */
 .input-group {
   display: flex;
   gap: 10px;
@@ -111,11 +131,13 @@ body {
 
 .input-group input::placeholder { color: #475569; }
 
+/* Resaltado violeta al enfocar el input */
 .input-group input:focus {
   border-color: #7c3aed;
   background: rgba(124, 58, 237, 0.08);
 }
 
+/* Botón agregar tarea con gradiente violeta */
 .btn-add {
   width: 48px;
   height: 48px;
@@ -139,7 +161,39 @@ body {
 
 .btn-add:active { transform: scale(0.95); }
 
-/* ===== LISTA ===== */
+/* Estado deshabilitado mientras se guarda */
+.btn-add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ===== SELECTOR DE PRIORIDAD =====
+ * Dropdown con las opciones: Alta, Media, Baja.
+ * Comparte altura con el input para alineación visual consistente.
+ */
+.priority-select {
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #f1f5f9;
+  font-size: 0.85rem;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+  height: 48px;
+}
+
+.priority-select:focus { border-color: #7c3aed; }
+
+/* Fondo oscuro para las opciones del dropdown */
+.priority-select option {
+  background: #1e1b4b;
+  color: #f1f5f9;
+}
+
+/* ===== LISTA DE TAREAS ===== */
 .task-list {
   list-style: none;
   display: flex;
@@ -148,6 +202,7 @@ body {
   margin-bottom: 20px;
 }
 
+/* Cada ítem tiene animación fadeIn al aparecer */
 .task-item {
   display: flex;
   align-items: center;
@@ -160,20 +215,21 @@ body {
   animation: fadeIn 0.3s ease;
 }
 
+/* Animación de entrada de cada tarea */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateX(-10px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 
+/* Resaltado violeta al hacer hover sobre la tarea */
 .task-item:hover {
   border-color: rgba(124, 58, 237, 0.4);
   background: rgba(124, 58, 237, 0.06);
   transform: translateX(4px);
 }
 
-.task-item.completed {
-  opacity: 0.5;
-}
+/* Tarea completada: reducir opacidad y tachar el título */
+.task-item.completed { opacity: 0.5; }
 
 .task-item.completed .task-title {
   text-decoration: line-through;
@@ -198,6 +254,7 @@ body {
   line-height: 1.4;
 }
 
+/* Botón eliminar oculto por defecto, visible al hacer hover en la tarea */
 .btn-delete {
   background: transparent;
   border: none;
@@ -208,13 +265,27 @@ body {
   flex-shrink: 0;
 }
 
-.task-item:hover .btn-delete {
-  opacity: 1;
-}
-
+.task-item:hover .btn-delete { opacity: 1; }
 .btn-delete:hover { transform: scale(1.2); }
 
-/* ===== EMPTY & FOOTER ===== */
+/* ===== BADGE DE PRIORIDAD =====
+ * Píldora de color con el nivel de prioridad de la tarea.
+ * El color de fondo se aplica dinámicamente desde App.jsx.
+ */
+.priority-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  color: #0f172a;
+  flex-shrink: 0;
+  letter-spacing: 0.3px;
+}
+
+/* ===== ESTADO VACÍO =====
+ * Se muestra cuando no hay tareas en la lista.
+ * Incluye ícono, título y subtítulo motivacional.
+ */
 .empty {
   text-align: center;
   color: #475569;
@@ -222,16 +293,124 @@ body {
   font-size: 0.95rem;
 }
 
-.footer {
+.empty-state {
   text-align: center;
-  color: #334155;
-  font-size: 0.75rem;
-  margin-top: 8px;
+  padding: 32px 0;
 }
 
-/* ===== MOBILE OPTIMIZATIONS ===== */
+.empty-icon    { font-size: 2.5rem; margin-bottom: 8px; }
+.empty-title   { color: #e2e8f0; font-size: 1rem; font-weight: 600; margin-bottom: 4px; }
+.empty-subtitle { color: #475569; font-size: 0.85rem; }
+
+/* ===== ERROR BANNER =====
+ * Mensaje de error visible con botón de cierre.
+ * Aparece encima del input cuando ocurre un fallo de API o validación.
+ */
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  color: #fca5a5;
+  font-size: 0.875rem;
+  animation: fadeIn 0.2s ease;
+}
+
+.error-close {
+  background: transparent;
+  border: none;
+  color: #fca5a5;
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: 0 0 0 12px;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.error-close:hover { opacity: 1; }
+
+/* ===== MODAL DE CONFIRMACIÓN =====
+ * Overlay oscuro con card centrada para confirmar eliminación.
+ * Evita borrados accidentales con dos botones: confirmar y cancelar.
+ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background: #1e1b4b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 28px 24px;
+  text-align: center;
+  width: 280px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modal p {
+  color: #e2e8f0;
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* Botón de confirmación rojo — acción destructiva */
+.btn-confirm {
+  padding: 10px 20px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.btn-confirm:hover {
+  background: #dc2626;
+  transform: scale(1.03);
+}
+
+/* Botón cancelar neutro — no destructivo */
+.btn-cancel {
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: scale(1.03);
+}
+
+/* ===== MOBILE OPTIMIZATIONS =====
+ * En pantallas muy pequeñas se oculta el selector de prioridad
+ * para evitar desbordamiento del input-group.
+ */
 @media (max-width: 380px) {
   .card { padding: 20px 16px; }
   .header h1 { font-size: 1.5rem; }
   .stat-number { font-size: 1.3rem; }
+  .priority-select { display: none; }
 }

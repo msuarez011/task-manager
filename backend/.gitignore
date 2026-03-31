@@ -1,2 +1,4 @@
+/**Ignora node_modules y archivos de variables de entorno
+ */ 
 node_modules/
 .env
