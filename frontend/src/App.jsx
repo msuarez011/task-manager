@@ -1,18 +1,22 @@
 /**
  * @file App.jsx
  * @description Componente principal del Task Manager.
- * Gestiona el estado global de tareas, interacciones con la API
- * y renderiza la interfaz completa de la aplicación.
+ * Gestiona el estado global de tareas e interacciones con la API
+ * a través del servicio centralizado taskService.js
  * Implementa optimistic updates para respuesta visual instantánea.
  * @author Marcelo Suárez
- * @date 2026-03-30
+ * @date 2026-03-31
  */
 
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import './App.css'
+import {
+  getTasks,
+  createTask as apiCreateTask,
+  toggleTask as apiToggleTask,
+  deleteTask as apiDeleteTask
+} from './services/taskService.js'
 
-const API_URL = 'https://task-manager-production-2c09.up.railway.app/api/tasks'
 
 /**
  * Colores y etiquetas asociados a cada nivel de prioridad.
@@ -38,18 +42,15 @@ function App() {
   const [error, setError]       = useState('')
   const [deleteId, setDeleteId] = useState(null)
 
-  useEffect(() => {
-    fetchTasks()
-  }, [])
+  useEffect(() => { fetchTasks() }, [])
 
   /**
-   * Obtiene todas las tareas desde la API y actualiza el estado.
-   * Maneja el estado de carga y errores de red.
+   * Obtiene todas las tareas desde el servicio y actualiza el estado.
    */
   const fetchTasks = async () => {
     try {
-      const response = await axios.get(API_URL)
-      setTasks(response.data)
+      const data = await getTasks()
+      setTasks(data)
     } catch {
       setError('No se pudo conectar al servidor. Verifica que el backend esté corriendo.')
     } finally {
@@ -62,20 +63,13 @@ function App() {
    * Valida que el título no esté vacío ni supere 200 caracteres.
    */
   const createTask = async () => {
-    if (!title.trim()) {
-      setError('El título no puede estar vacío.')
-      return
-    }
-
-    if (title.trim().length > 200) {
-      setError('El título no puede superar los 200 caracteres.')
-      return
-    }
+    if (!title.trim()) return setError('El título no puede estar vacío.')
+    if (title.trim().length > 200) return setError('El título no puede superar los 200 caracteres.')
 
     try {
       setSaving(true)
       setError('')
-      await axios.post(API_URL, { title: title.trim(), priority })
+      await apiCreateTask(title.trim(), priority)
       setTitle('')
       setPriority('medium')
       await fetchTasks()
@@ -88,36 +82,28 @@ function App() {
 
   /**
    * Invierte el estado completed de una tarea con actualización optimista.
-   * Actualiza la UI inmediatamente sin esperar respuesta del servidor.
    * Si la API falla, revierte el cambio al estado anterior.
    * @param {string} id - UUID de la tarea
+   * @param {boolean} completed - Estado actual de la tarea
    */
-  const toggleTask = async (id) => {
-    // Actualizar UI inmediatamente sin esperar la API
-    setTasks(prev =>
-      prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t)
-    )
-
+  const toggleTask = async (id, completed) => {
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t))
     try {
-      await axios.patch(`${API_URL}/${id}/toggle`)
+      await apiToggleTask(id, !completed)
     } catch {
-      // Revertir si la API falla
-      setTasks(prev =>
-        prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t)
-      )
+      setTasks(prev => prev.map(t => t.id === id ? { ...t, completed } : t))
       setError('Error al actualizar la tarea.')
     }
   }
 
   /**
    * Elimina una tarea tras confirmación del usuario.
-   * Usa el estado deleteId como modal de confirmación liviano.
    * @param {string} id - UUID de la tarea a eliminar
    */
   const deleteTask = async (id) => {
     try {
       setError('')
-      await axios.delete(`${API_URL}/${id}`)
+      await apiDeleteTask(id)
       setDeleteId(null)
       await fetchTasks()
     } catch {
@@ -132,13 +118,11 @@ function App() {
     <div className="app">
       <div className="card">
 
-        {/* Header */}
         <div className="header">
           <h1>📝 Task Manager</h1>
           <p className="subtitle">Organiza tu día</p>
         </div>
 
-        {/* Contador de estadísticas */}
         <div className="stats">
           <div className="stat">
             <span className="stat-number">{tasks.length}</span>
@@ -154,7 +138,6 @@ function App() {
           </div>
         </div>
 
-        {/* Mensaje de error global con botón de cierre */}
         {error && (
           <div className="error-banner">
             ⚠️ {error}
@@ -162,17 +145,13 @@ function App() {
           </div>
         )}
 
-        {/* Input de nueva tarea + selector de prioridad */}
         <div className="input-group">
           <input
             type="text"
             placeholder="¿Qué necesitas hacer?"
             value={title}
             maxLength={200}
-            onChange={(e) => {
-              setTitle(e.target.value)
-              if (error) setError('')
-            }}
+            onChange={(e) => { setTitle(e.target.value); if (error) setError('') }}
             onKeyDown={(e) => e.key === 'Enter' && !saving && createTask()}
             aria-label="Nueva tarea"
           />
@@ -196,7 +175,6 @@ function App() {
           </button>
         </div>
 
-        {/* Lista de tareas / estados de carga y vacío */}
         {loading ? (
           <p className="empty">⏳ Cargando tareas...</p>
         ) : tasks.length === 0 ? (
@@ -207,31 +185,21 @@ function App() {
         ) : (
           <ul className="task-list">
             {tasks.map(task => (
-              <li
-                key={task.id}
-                className={`task-item ${task.completed ? 'completed' : ''}`}
-              >
-                {/* Toggle completado */}
+              <li key={task.id} className={`task-item ${task.completed ? 'completed' : ''}`}>
                 <button
                   className="btn-check"
-                  onClick={() => toggleTask(task.id)}
+                  onClick={() => toggleTask(task.id, task.completed)}
                   aria-label={task.completed ? 'Marcar como pendiente' : 'Marcar como completada'}
                 >
                   {task.completed ? '✅' : '⬜'}
                 </button>
-
-                {/* Título de la tarea */}
                 <span className="task-title">{task.title}</span>
-
-                {/* Badge visual de prioridad */}
                 <span
                   className="priority-badge"
                   style={{ backgroundColor: PRIORITY_COLORS[task.priority]?.bg || '#ccc' }}
                 >
                   {PRIORITY_COLORS[task.priority]?.label || task.priority}
                 </span>
-
-                {/* Botón eliminar — abre modal de confirmación */}
                 <button
                   className="btn-delete"
                   onClick={() => setDeleteId(task.id)}
@@ -244,22 +212,15 @@ function App() {
           </ul>
         )}
 
-        {/* Modal de confirmación antes de eliminar */}
         {deleteId && (
           <div className="modal-overlay">
             <div className="modal">
               <p>¿Eliminar esta tarea?</p>
               <div className="modal-actions">
-                <button
-                  className="btn-confirm"
-                  onClick={() => deleteTask(deleteId)}
-                >
+                <button className="btn-confirm" onClick={() => deleteTask(deleteId)}>
                   Sí, eliminar
                 </button>
-                <button
-                  className="btn-cancel"
-                  onClick={() => setDeleteId(null)}
-                >
+                <button className="btn-cancel" onClick={() => setDeleteId(null)}>
                   Cancelar
                 </button>
               </div>
@@ -267,9 +228,7 @@ function App() {
           </div>
         )}
 
-        {/* Footer */}
         <p className="footer">Task Manager v1.0</p>
-
       </div>
     </div>
   )
