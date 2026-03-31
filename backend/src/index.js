@@ -14,11 +14,15 @@ import taskRoutes from './routes/tasks.js'
 const app = express()
 const PORT = process.env.PORT || 3000
 
-// Middlewares globales
-app.use(cors())
-app.use(express.json())
+// Permitir peticiones desde Vercel y localhost
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://task-manager-kappa-tan-53.vercel.app'
+  ]
+}))
 
-// Rutas
+app.use(express.json())
 app.use('/api/tasks', taskRoutes)
 
 app.listen(PORT, () => {

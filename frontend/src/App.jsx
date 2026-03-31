@@ -12,7 +12,7 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import './App.css'
 
-const API_URL = 'http://localhost:3000/api/tasks'
+const API_URL = 'https://task-manager-production-2c09.up.railway.app'
 
 /**
  * Colores y etiquetas asociados a cada nivel de prioridad.
