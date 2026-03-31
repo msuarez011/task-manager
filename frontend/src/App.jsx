@@ -12,7 +12,7 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import './App.css'
 
-const API_URL = 'https://task-manager-production-2c09.up.railway.app'
+const API_URL = 'https://task-manager-production-2c09.up.railway.app/api/tasks'
 
 /**
  * Colores y etiquetas asociados a cada nivel de prioridad.
@@ -201,7 +201,6 @@ function App() {
           <p className="empty">⏳ Cargando tareas...</p>
         ) : tasks.length === 0 ? (
           <div className="empty-state">
-            <p className="empty-icon">🎉</p>
             <p className="empty-title">¡Todo listo por hoy!</p>
             <p className="empty-subtitle">Agrega una tarea para empezar</p>
           </div>
