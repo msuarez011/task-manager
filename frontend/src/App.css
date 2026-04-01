@@ -256,8 +256,6 @@ body {
 
 /* Botón eliminar oculto por defecto, visible al hacer hover en la tarea */
 .btn-delete {
-  background: transparent;
-  border: none;
   font-size: 1rem;
   cursor: pointer;
   opacity: 0.3;
