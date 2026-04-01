@@ -256,16 +256,25 @@ body {
 
 /* Botón eliminar oculto por defecto, visible al hacer hover en la tarea */
 .btn-delete {
-  font-size: 1rem;
+  background: transparent;
+  border: none;
+  outline: none;
   cursor: pointer;
   opacity: 0.3;
-  transition: opacity 0.2s, transform 0.2s;
+  transition: opacity 0.2s, transform 0.2s, color 0.2s;
   flex-shrink: 0;
   color: #64748b;
   display: flex;
   align-items: center;
   padding: 4px;
-  border-radius: 6px;
+  border-radius: 0;
+}
+
+.task-item:hover .btn-delete { opacity: 1; color: #ef4444; }
+.btn-delete:hover { transform: scale(1.1); }
+
+@media (max-width: 768px) {
+  .btn-delete { opacity: 0.5; }
 }
 
 .task-item:hover .btn-delete { opacity: 1; color: #ef4444; }
