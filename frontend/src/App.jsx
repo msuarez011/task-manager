@@ -33,7 +33,6 @@ function App() {
   const [session, setSession]   = useState(null)
   const [tasks, setTasks]       = useState([])
   const [title, setTitle]       = useState('')
-  const [priority, setPriority] = useState('medium')
   const [loading, setLoading]   = useState(true)
   const [saving, setSaving]     = useState(false)
   const [error, setError]       = useState('')
@@ -76,7 +75,7 @@ function App() {
       setSaving(true)
       setError('')
       const headers = await getAuthHeader()
-      await axios.post(API_URL, { title: title.trim(), priority }, { headers })
+      await axios.post(API_URL, { title: title.trim() }, { headers })
       setTitle('')
       setPriority('medium')
       await fetchTasks()
@@ -193,23 +192,6 @@ function App() {
             {saving ? <Loader2 size={20} className="spin" /> : <Plus size={20} />}
           </button>
         </div>
-
-        {/* Selector de prioridad */}
-        <div className="priority-selector">
-          {Object.entries(PRIORITIES).map(([key, { label, color, bg, Icon }]) => (
-            <button
-              key={key}
-              className={`priority-btn ${priority === key ? 'active' : ''}`}
-              style={priority === key ? { borderColor: color, background: bg, color } : {}}
-              onClick={() => setPriority(key)}
-              aria-label={`Prioridad ${label}`}
-            >
-              <Icon size={14} />
-              {label}
-            </button>
-          ))}
-        </div>
-
         {/* Lista de tareas */}
         {tasks.length === 0 ? (
           <div className="empty-state">
