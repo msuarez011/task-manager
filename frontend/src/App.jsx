@@ -70,7 +70,7 @@ function App() {
   }
 
   const createTask = async () => {
-    if (!title.trim()) return setError('El título no puede estar vacío.')
+    if (!title.trim()) return setError('No puede estar vacío.')
     if (title.trim().length > 200) return setError('Máximo 200 caracteres.')
     try {
       setSaving(true)

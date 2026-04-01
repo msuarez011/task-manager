@@ -260,13 +260,22 @@ body {
   border: none;
   font-size: 1rem;
   cursor: pointer;
-  opacity: 0;
+  opacity: 0.3;
   transition: opacity 0.2s, transform 0.2s;
   flex-shrink: 0;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 6px;
 }
 
-.task-item:hover .btn-delete { opacity: 1; }
-.btn-delete:hover { transform: scale(1.2); }
+.task-item:hover .btn-delete { opacity: 1; color: #ef4444; }
+.btn-delete:hover { transform: scale(1.1); }
+
+@media (max-width: 768px) {
+  .btn-delete { opacity: 0.5; }
+}
 
 /* ===== BADGE DE PRIORIDAD =====
  * Píldora de color con el nivel de prioridad de la tarea.

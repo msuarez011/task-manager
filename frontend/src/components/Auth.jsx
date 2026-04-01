@@ -5,65 +5,73 @@
  * @date 2026-03-31
  */
 
-import { useState } from 'react'
-import { supabase } from '../supabaseClient'
-import { Eye, EyeOff } from 'lucide-react'
+import { useState } from "react";
+import { supabase } from "../supabaseClient";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Auth() {
-  const [isLogin, setIsLogin]         = useState(true)
-  const [email, setEmail]             = useState('')
-  const [password, setPassword]       = useState('')
-  const [confirmPassword, setConfirm] = useState('')
-  const [name, setName]               = useState('')
-  const [loading, setLoading]         = useState(false)
-  const [error, setError]             = useState('')
-  const [message, setMessage]         = useState('')
-  const [showPass, setShowPass]       = useState(false)
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirm] = useState("");
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [showPass, setShowPass] = useState(false);
 
   const handleSubmit = async () => {
-    setError('')
-    setMessage('')
-    if (!email || !password) return setError('Completa todos los campos.')
-    if (!email.includes('@')) return setError('Ingresa un correo válido.')
-    if (password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres.')
-    if (!isLogin && !name.trim()) return setError('Ingresa tu nombre.')
-    if (!isLogin && password !== confirmPassword) return setError('Las contraseñas no coinciden.')
+    setError("");
+    setMessage("");
+    if (!email || !password) return setError("Completa todos los campos.");
+    if (!email.includes("@")) return setError("Ingresa un correo válido.");
+    if (password.length < 6)
+      return setError("La contraseña debe tener al menos 6 caracteres.");
+    if (!isLogin && !name.trim()) return setError("Ingresa tu nombre.");
+    if (!isLogin && password !== confirmPassword)
+      return setError("Las contraseñas no coinciden.");
 
-    setLoading(true)
+    setLoading(true);
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) throw error
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
       } else {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: name.trim() } }
-        })
-        if (error) throw error
-        setMessage('¡Cuenta creada! Ya puedes iniciar sesión.')
-        setIsLogin(true)
+          options: { data: { full_name: name.trim() } },
+        });
+        if (error) throw error;
+        setMessage("¡Cuenta creada! Ya puedes iniciar sesión.");
+        setIsLogin(true);
       }
     } catch (err) {
-      const msg = err.message || ''
-      if (msg.includes('Invalid login')) setError('Correo o contraseña incorrectos.')
-      else if (msg.includes('already registered')) setError('Este correo ya está registrado.')
-      else if (msg.includes('not confirmed')) setError('Confirma tu correo antes de iniciar sesión.')
-      else setError(msg || 'Error de autenticación.')
+      const msg = err.message || "";
+      if (msg.includes("Invalid login"))
+        setError("Correo o contraseña incorrectos.");
+      else if (msg.includes("already registered"))
+        setError("Este correo ya está registrado.");
+      else if (msg.includes("not confirmed"))
+        setError("Confirma tu correo antes de iniciar sesión.");
+      else setError(msg || "Error de autenticación.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const switchMode = () => {
-    setIsLogin(!isLogin)
-    setError('')
-    setMessage('')
-    setEmail('')
-    setPassword('')
-    setConfirm('')
-    setName('')
-  }
+    setIsLogin(!isLogin);
+    setError("");
+    setMessage("");
+    setEmail("");
+    setPassword("");
+    setConfirm("");
+    setName("");
+  };
 
   return (
     <>
@@ -80,6 +88,7 @@ export default function Auth() {
           background: #080810;
           font-family: 'DM Sans', sans-serif;
           padding: 20px;
+          overflow-y: auto;
         }
 
         .auth-bg {
@@ -177,13 +186,12 @@ export default function Auth() {
         }
 
         .auth-title {
-          font-family: 'Syne', sans-serif;
-          font-size: 26px;
-          font-weight: 700;
-          color: #fff;
-          letter-spacing: -0.3px;
-          margin-bottom: 6px;
-          text-transform: none;
+           font-family: 'DM Sans', sans-serif;
+           font-size: 26px;
+           font-weight: 600;
+           color: #fff;
+           letter-spacing: -0.3px;
+           margin-bottom: 6px;
         }
 
         .auth-subtitle {
@@ -362,22 +370,21 @@ export default function Auth() {
         <div className="auth-grid" />
 
         <div className="auth-card">
-
           <div className="auth-logo">
             <div className="auth-logo-icon">📝</div>
             <span className="auth-logo-text">Task Manager</span>
           </div>
 
           <h1 className="auth-title">
-            {isLogin ? 'Bienvenido de nuevo' : 'Crea tu cuenta'}
+            {isLogin ? "Bienvenido de nuevo" : "Crea tu cuenta"}
           </h1>
           <p className="auth-subtitle">
             {isLogin
-              ? 'Ingresa tus credenciales para continuar'
-              : 'Únete y empieza a organizar tu día'}
+              ? "Ingresa tus credenciales para continuar"
+              : "Únete y empieza a organizar tu día"}
           </p>
 
-          {error   && <div className="auth-error">⚠️ {error}</div>}
+          {error && <div className="auth-error">⚠️ {error}</div>}
           {message && <div className="auth-success">✅ {message}</div>}
 
           {!isLogin && (
@@ -388,7 +395,10 @@ export default function Auth() {
                 type="text"
                 placeholder="Tu nombre Completo"
                 value={name}
-                onChange={(e) => { setName(e.target.value); setError('') }}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setError("");
+                }}
               />
             </div>
           )}
@@ -400,8 +410,11 @@ export default function Auth() {
               type="email"
               placeholder="tu@correo.com"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); setError('') }}
-              onKeyDown={(e) => e.key === 'Enter' && !loading && handleSubmit()}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError("");
+              }}
+              onKeyDown={(e) => e.key === "Enter" && !loading && handleSubmit()}
             />
           </div>
 
@@ -410,11 +423,16 @@ export default function Auth() {
             <div className="auth-input-wrap">
               <input
                 className="auth-input has-toggle"
-                type={showPass ? 'text' : 'password'}
+                type={showPass ? "text" : "password"}
                 placeholder="Mínimo 6 caracteres"
                 value={password}
-                onChange={(e) => { setPassword(e.target.value); setError('') }}
-                onKeyDown={(e) => e.key === 'Enter' && !loading && handleSubmit()}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError("");
+                }}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && !loading && handleSubmit()
+                }
               />
               <button
                 className="auth-toggle-pass"
@@ -428,12 +446,38 @@ export default function Auth() {
             {!isLogin && password.length > 0 && (
               <>
                 <div className="password-strength">
-                  <div className={`strength-bar ${password.length >= 1 ? (password.length < 6 ? 'weak' : password.length < 10 ? 'medium' : 'strong') : ''}`} />
-                  <div className={`strength-bar ${password.length >= 6 ? (password.length < 10 ? 'medium' : 'strong') : ''}`} />
-                  <div className={`strength-bar ${password.length >= 10 ? 'strong' : ''}`} />
+                  <div
+                    className={`strength-bar ${
+                      password.length >= 1
+                        ? password.length < 6
+                          ? "weak"
+                          : password.length < 10
+                          ? "medium"
+                          : "strong"
+                        : ""
+                    }`}
+                  />
+                  <div
+                    className={`strength-bar ${
+                      password.length >= 6
+                        ? password.length < 10
+                          ? "medium"
+                          : "strong"
+                        : ""
+                    }`}
+                  />
+                  <div
+                    className={`strength-bar ${
+                      password.length >= 10 ? "strong" : ""
+                    }`}
+                  />
                 </div>
                 <p className="strength-label">
-                  {password.length < 6 ? 'Débil' : password.length < 10 ? 'Media' : 'Fuerte'}
+                  {password.length < 6
+                    ? "Débil"
+                    : password.length < 10
+                    ? "Media"
+                    : "Fuerte"}
                 </p>
               </>
             )}
@@ -444,17 +488,30 @@ export default function Auth() {
               <label className="auth-label">Confirmar contraseña</label>
               <input
                 className="auth-input"
-                type={showPass ? 'text' : 'password'}
+                type={showPass ? "text" : "password"}
                 placeholder="Repite tu contraseña"
                 value={confirmPassword}
-                onChange={(e) => { setConfirm(e.target.value); setError('') }}
-                onKeyDown={(e) => e.key === 'Enter' && !loading && handleSubmit()}
+                onChange={(e) => {
+                  setConfirm(e.target.value);
+                  setError("");
+                }}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && !loading && handleSubmit()
+                }
               />
             </div>
           )}
 
-          <button className="auth-btn" onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Procesando...' : isLogin ? 'Iniciar sesión' : 'Crear cuenta gratis'}
+          <button
+            className="auth-btn"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading
+              ? "Procesando..."
+              : isLogin
+              ? "Iniciar sesión"
+              : "Crear cuenta gratis"}
           </button>
 
           {!isLogin && (
@@ -465,9 +522,9 @@ export default function Auth() {
 
           {/* Link para cambiar modo — abajo del botón */}
           <div className="auth-switch">
-            {isLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}
+            {isLogin ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"}
             <button className="auth-switch-btn" onClick={switchMode}>
-              {isLogin ? 'Regístrate gratis' : 'Inicia sesión'}
+              {isLogin ? "Regístrate gratis" : "Inicia sesión"}
             </button>
           </div>
 
@@ -475,5 +532,5 @@ export default function Auth() {
         </div>
       </div>
     </>
-  )
+  );
 }
