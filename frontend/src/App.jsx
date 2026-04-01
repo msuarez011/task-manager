@@ -213,7 +213,6 @@ function App() {
         {/* Lista de tareas */}
         {tasks.length === 0 ? (
           <div className="empty-state">
-            <PartyPopper size={40} color="#7c3aed" />
             <p className="empty-title">¡Todo listo por hoy!</p>
             <p className="empty-subtitle">Agrega una tarea para empezar</p>
           </div>
@@ -276,7 +275,7 @@ function App() {
           </div>
         )}
 
-        <p className="footer">Task Manager v1.0 — Mi portafolio</p>
+        <p className="footer">Task Manager v1.0</p>
       </div>
     </div>
   )
