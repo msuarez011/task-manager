@@ -61,7 +61,7 @@ function App() {
   const fetchTasks = async () => {
     try {
       const headers = await getAuthHeader()
-      const response = await axios.get(API_URL, { headers })
+      const response = await axios.get(API_URL, { headers, timeout: 30000 })
       setTasks(response.data)
     } catch {
       setError('No se pudo conectar al servidor.')
@@ -75,22 +75,23 @@ function App() {
       setSaving(true)
       setError('')
       const headers = await getAuthHeader()
-      await axios.post(API_URL, { title: title.trim() }, { headers })
-      setTitle('')
-      setPriority('medium')
-      await fetchTasks()
-    } catch {
-      setError('Error al crear la tarea.')
-    } finally {
-      setSaving(false)
+      await axios.post(API_URL, { title: title.trim() }, { 
+        headers,
+        timeout: 30000 // 30 segundos
+      })
+    } catch (err) {
+      if (err.code === 'ECONNABORTED') {
+        setError('El servidor está iniciando, intenta de nuevo en unos segundos.')
+      } else {
+        setError('Error al crear la tarea.')
+      }
     }
-  }
 
   const toggleTask = async (id) => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t))
     try {
       const headers = await getAuthHeader()
-      await axios.patch(`${API_URL}/${id}/toggle`, {}, { headers })
+      await axios.patch(`${API_URL}/${id}/toggle`, {}, { headers, timeout: 30000 })
     } catch {
       setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t))
       setError('Error al actualizar la tarea.')
@@ -101,7 +102,7 @@ function App() {
     try {
       setError('')
       const headers = await getAuthHeader()
-      await axios.delete(`${API_URL}/${id}`, { headers })
+      await axios.delete(`${API_URL}/${id}`, { headers, timeout: 30000 })
       setDeleteId(null)
       await fetchTasks()
     } catch {
