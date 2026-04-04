@@ -2,36 +2,23 @@
  * @file tasksController.js
  * @description Controlador REST para el recurso Tasks.
  * Todas las operaciones filtran por user_id del token JWT.
+ * Errores internos no se exponen al cliente.
+ * Incluye límite de 100 tareas por usuario y sanitización básica.
  * @author Marcelo Suárez
- * @date 2026-03-31
+ * @date 2026-04-02
  */
 
 import { supabase } from '../config/supabase.js'
 
 /**
- * Obtiene todas las tareas del usuario autenticado.
- * @route GET /api/tasks
- * @param {import('express').Request} req - req.userId del middleware
- * @param {import('express').Response} res
+ * Sanitiza el título eliminando caracteres peligrosos para XSS.
+ * @param {string} str - Texto a sanitizar
+ * @returns {string} Texto limpio
  */
-export const getTasks = async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from('tasks')
-      .select('*')
-      .eq('user_id', req.userId)
-      .order('created_at', { ascending: false })
-
-    if (error) throw error
-    res.json(data)
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-}
+const sanitize = (str) => str.replace(/[<>]/g, '').trim()
 
 /**
  * Detecta automáticamente la prioridad de una tarea según su título.
- * Analiza palabras clave para clasificar en alta, media o baja.
  * @param {string} title - Título de la tarea
  * @returns {'high'|'medium'|'low'} Prioridad detectada
  */
@@ -59,48 +46,78 @@ const detectPriority = (title) => {
 }
 
 /**
+ * Obtiene todas las tareas del usuario autenticado.
+ * @route GET /api/tasks
+ */
+export const getTasks = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('user_id', req.userId)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    res.json(data)
+  } catch (err) {
+    console.error('[GET /tasks]', err.message)
+    res.status(500).json({ error: 'Error interno del servidor.' })
+  }
+}
+
+/**
  * Crea una nueva tarea asociada al usuario autenticado.
+ * Límite máximo de 100 tareas por usuario.
  * @route POST /api/tasks
- * @param {import('express').Request} req - Body: { title, priority }
- * @param {import('express').Response} res
  */
 export const createTask = async (req, res) => {
   try {
-    const { title } = req.body
-
-    if (!title || title.trim() === '') {
+    const raw = req.body.title
+    if (!raw || raw.trim() === '') {
       return res.status(400).json({ error: 'El título es obligatorio.' })
     }
 
-    if (title.trim().length > 200) {
+    const title = sanitize(raw)
+
+    if (title.length === 0) {
+      return res.status(400).json({ error: 'El título contiene caracteres no válidos.' })
+    }
+
+    if (title.length > 200) {
       return res.status(400).json({ error: 'Máximo 200 caracteres.' })
     }
 
-    // Detectar prioridad automáticamente
-    const priority = detectPriority(title.trim())
+    // Verificar límite de tareas por usuario
+    const { count, error: countError } = await supabase
+      .from('tasks')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', req.userId)
+
+    if (countError) throw countError
+
+    if (count >= 100) {
+      return res.status(429).json({ error: 'Límite de 100 tareas alcanzado. Elimina algunas para continuar.' })
+    }
+
+    const priority = detectPriority(title)
 
     const { data, error } = await supabase
       .from('tasks')
-      .insert([{
-        title: title.trim(),
-        priority,
-        user_id: req.userId
-      }])
+      .insert([{ title, priority, user_id: req.userId }])
       .select()
       .single()
 
     if (error) throw error
     res.status(201).json(data)
-  } catch (error) {
-    res.status(500).json({ error: error.message })
+  } catch (err) {
+    console.error('[POST /tasks]', err.message)
+    res.status(500).json({ error: 'Error interno del servidor.' })
   }
 }
 
 /**
  * Invierte el estado completed de una tarea del usuario.
  * @route PATCH /api/tasks/:id/toggle
- * @param {import('express').Request} req - Params: { id }
- * @param {import('express').Response} res
  */
 export const toggleTask = async (req, res) => {
   try {
@@ -126,16 +143,15 @@ export const toggleTask = async (req, res) => {
 
     if (error) throw error
     res.json(data)
-  } catch (error) {
-    res.status(500).json({ error: error.message })
+  } catch (err) {
+    console.error('[PATCH /tasks/:id/toggle]', err.message)
+    res.status(500).json({ error: 'Error interno del servidor.' })
   }
 }
 
 /**
  * Elimina una tarea del usuario autenticado.
  * @route DELETE /api/tasks/:id
- * @param {import('express').Request} req - Params: { id }
- * @param {import('express').Response} res
  */
 export const deleteTask = async (req, res) => {
   try {
@@ -149,7 +165,8 @@ export const deleteTask = async (req, res) => {
 
     if (error) throw error
     res.status(204).send()
-  } catch (error) {
-    res.status(500).json({ error: error.message })
+  } catch (err) {
+    console.error('[DELETE /tasks/:id]', err.message)
+    res.status(500).json({ error: 'Error interno del servidor.' })
   }
 }

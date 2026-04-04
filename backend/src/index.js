@@ -1,20 +1,26 @@
 /**
  * @file index.js
  * @description Punto de entrada del servidor Express.
- * Configura middlewares, rutas y levanta el servidor HTTP.
+ * Configura middlewares de seguridad, rutas y levanta el servidor HTTP.
+ * Incluye Helmet.js para headers seguros y rate limiting contra fuerza bruta.
  * @author Marcelo Suárez
- * @date 2026-03-30
+ * @date 2026-04-02
  */
 
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
 import taskRoutes from './routes/tasks.js'
 
 const app = express()
 const PORT = process.env.PORT || 3000
 
-// Permitir peticiones desde Vercel y localhost
+// Headers de seguridad HTTP
+app.use(helmet())
+
+// CORS — solo dominios autorizados
 app.use(cors({
   origin: [
     'http://localhost:5173',
@@ -22,6 +28,16 @@ app.use(cors({
   ]
 }))
 
+// Rate limiting — máx 100 peticiones por IP cada 15 minutos
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiadas peticiones. Intenta de nuevo en 15 minutos.' }
+})
+
+app.use('/api/', limiter)
 app.use(express.json())
 app.use('/api/tasks', taskRoutes)
 
