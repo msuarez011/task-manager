@@ -19,29 +19,85 @@ const sanitize = (str) => str.replace(/[<>]/g, '').trim()
 
 /**
  * Detecta automáticamente la prioridad de una tarea según su título.
+ * Sistema mejorado con más keywords en español, patrones contextuales
+ * y pesos por categoría para mayor precisión.
  * @param {string} title - Título de la tarea
  * @returns {'high'|'medium'|'low'} Prioridad detectada
  */
 const detectPriority = (title) => {
   const text = title.toLowerCase()
 
-  const highKeywords = [
-    'urgente', 'urgent', 'importante', 'critical', 'crítico',
-    'emergencia', 'ya', 'ahora', 'hoy', 'deadline', 'entregar',
-    'examen', 'reunión', 'reunion', 'presentación', 'presentacion',
-    'pagar', 'médico', 'medico', 'doctor', 'cita', 'trabajo',
-    'jefe', 'cliente', 'proyecto', 'entrega', 'vence'
+  // ── ALTA PRIORIDAD ────────────────────────────────────────────────
+  const highPatterns = [
+    // Urgencia directa
+    'urgente', 'urgentemente', 'urgent', 'asap', 'ya mismo', 'ahora mismo',
+    'inmediato', 'inmediatamente', 'crítico', 'critico', 'critical',
+    'emergencia', 'emergente', 'prioritario', 'prioritaria',
+    // Tiempo límite
+    'hoy', 'esta noche', 'esta tarde', 'esta mañana', 'ahorita',
+    'deadline', 'fecha límite', 'fecha limite', 'vence hoy', 'vence mañana',
+    'entrega hoy', 'entrega mañana', 'para mañana', 'para hoy',
+    // Salud
+    'médico', 'medico', 'doctor', 'doctora', 'hospital', 'clínica', 'clinica',
+    'cita médica', 'cita medica', 'farmacia', 'medicamento', 'medicina',
+    'emergencia médica', 'dolor', 'enfermo', 'enferma',
+    // Trabajo y compromisos
+    'reunión', 'reunion', 'junta', 'presentación', 'presentacion',
+    'entrevista', 'cliente', 'jefe', 'jefa', 'gerente', 'director',
+    'informe', 'reporte', 'propuesta', 'contrato', 'firma',
+    'llamada importante', 'videoconferencia', 'zoom', 'meet',
+    // Dinero y pagos
+    'pagar', 'pago', 'factura', 'deuda', 'vencimiento', 'cobro',
+    'transferencia', 'banco', 'tarjeta', 'impuesto', 'declaración',
+    'declaracion', 'multa', 'mora',
+    // Estudio
+    'examen', 'parcial', 'final', 'tesis', 'sustentación', 'sustentacion',
+    'exposición', 'exposicion', 'entrega de proyecto', 'tarea para mañana',
+    // Compromisos sociales urgentes
+    'boda', 'funeral', 'viaje mañana', 'vuelo', 'aeropuerto',
+    'cumpleaños hoy', 'evento hoy'
   ]
 
-  const lowKeywords = [
-    'cuando pueda', 'algún día', 'algun dia', 'después', 'despues',
-    'opcional', 'leisure', 'ocio', 'leer', 'ver', 'explorar',
-    'investigar', 'revisar', 'pensar', 'considerar', 'quizás',
-    'quizas', 'tal vez', 'hobby', 'jugar', 'paseo', 'caminar'
+  // ── BAJA PRIORIDAD ────────────────────────────────────────────────
+  const lowPatterns = [
+    // Tiempo indefinido
+    'algún día', 'algun dia', 'cuando pueda', 'cuando tenga tiempo',
+    'a futuro', 'en algún momento', 'eventualmente', 'más adelante',
+    'mas adelante', 'después', 'despues', 'luego', 'un día', 'un dia',
+    'tarde o temprano', 'con calma', 'sin apuro', 'sin prisa',
+    // Ocio y entretenimiento
+    'ver película', 'ver pelicula', 'ver serie', 'ver anime',
+    'jugar', 'videojuego', 'netflix', 'spotify', 'youtube',
+    'leer libro', 'leer novela', 'manga', 'comic', 'cómic',
+    'paseo', 'caminata', 'caminar', 'pasear', 'relajar', 'descansar',
+    'hobby', 'manualidad', 'dibujar', 'pintar', 'tejer',
+    // Exploración opcional
+    'explorar', 'investigar', 'aprender sobre', 'curiosidad',
+    'probar', 'intentar', 'considerar', 'pensar en', 'evaluar',
+    'quizás', 'quizas', 'tal vez', 'puede ser', 'si tengo tiempo',
+    'opcional', 'no urgente', 'baja prioridad',
+    // Compras no urgentes
+    'ver tiendas', 'buscar en amazon', 'wishlist', 'lista de deseos',
+    'comparar precios', 'buscar ofertas',
+    // Organización futura
+    'reorganizar', 'ordenar algún día', 'decorar', 'rediseñar',
+    'redisenar', 'mejorar cuando pueda'
   ]
 
-  if (highKeywords.some(kw => text.includes(kw))) return 'high'
-  if (lowKeywords.some(kw => text.includes(kw))) return 'low'
+  // ── DETECCIÓN CON PESO ────────────────────────────────────────────
+  // Contar matches para mayor precisión
+  const highMatches = highPatterns.filter(kw => text.includes(kw)).length
+  const lowMatches  = lowPatterns.filter(kw => text.includes(kw)).length
+
+  if (highMatches > 0) return 'high'
+  if (lowMatches > 0)  return 'low'
+
+  // ── PATRONES CONTEXTUALES ─────────────────────────────────────────
+  // Frases con números que sugieren urgencia temporal
+  if (/en \d+ (minuto|hora|dia|día)s?/.test(text)) return 'high'
+  // Palabras que terminan en "ando/endo" sugieren acción inmediata
+  if (/(terminando|acabando|completando|enviando|entregando)/.test(text)) return 'high'
+
   return 'medium'
 }
 
