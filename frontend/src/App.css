@@ -1,545 +1,589 @@
-/* ===== RESET & BASE ===== */
 /*
- * @file App.css
- * @description Estilos globales del Task Manager.
- * Diseño mobile-first con glassmorphism, animaciones suaves
- * y soporte para modal, badges de prioridad y mensajes de error.
- * @author Marcelo Suárez
- * @date 2026-03-30
- */
+* @file App.css
+* @description Estilos globales del Task Manager — Rediseño 2026.
+* Sistema de diseño moderno con microinteracciones, animaciones fluidas,
+* glassmorphism mejorado y tokens de color consistentes.
+* @author Marcelo Suárez
+* @date 2026-04-02
+*/
 
- * {
+/* ===== TOKENS DE DISEÑO ===== */
+:root {
+  --color-bg-start:     #080B14;
+  --color-bg-end:       #0F172A;
+  --color-surface:      rgba(255, 255, 255, 0.04);
+  --color-surface-hover:rgba(124, 58, 237, 0.08);
+  --color-border:       rgba(255, 255, 255, 0.08);
+  --color-border-focus: #7C3AED;
+  --color-purple:       #7C3AED;
+  --color-purple-dark:  #6D28D9;
+  --color-purple-glow:  rgba(124, 58, 237, 0.4);
+  --color-text-primary: #F1F5F9;
+  --color-text-secondary:#94A3B8;
+  --color-text-muted:   #475569;
+  --color-success:      #10B981;
+  --color-warning:      #F59E0B;
+  --color-danger:       #EF4444;
+  --radius-sm:          8px;
+  --radius-md:          12px;
+  --radius-lg:          16px;
+  --radius-xl:          24px;
+  --transition-fast:    0.15s ease;
+  --transition-base:    0.25s ease;
+  --transition-slow:    0.4s cubic-bezier(0.16, 1, 0.3, 1);
+ }
+ 
+ /* ===== RESET ===== */
+ *, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}
-
-body {
-  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+ }
+ 
+ /* ===== BASE ===== */
+ body {
+  background: linear-gradient(145deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%);
   min-height: 100vh;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 20px 16px;
-}
-
-/* ===== CARD PRINCIPAL =====
- * Contenedor glassmorphism con blur, borde semitransparente
- * y animación de entrada slideUp al cargar la página.
- */
-.app {
+  padding: 24px 16px 40px;
+  color: var(--color-text-primary);
+ }
+ 
+ /* Fondo con partículas sutiles */
+ body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse at 20% 20%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(99, 102, 241, 0.06) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+ }
+ 
+ /* ===== LAYOUT PRINCIPAL ===== */
+ .app {
   width: 100%;
-  max-width: 480px;
+  max-width: 500px;
   margin: 0 auto;
-}
-
-.card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  padding: 28px 24px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
-  animation: slideUp 0.4s ease;
-}
-
-/* Animación de entrada de la card */
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ===== HEADER ===== */
-.header {
-  text-align: center;
+  position: relative;
+  z-index: 1;
+ }
+ 
+ /* ===== CARD PRINCIPAL ===== */
+ .card {
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 28px 24px 32px;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 32px 64px rgba(0, 0, 0, 0.5),
+    0 0 80px rgba(124, 58, 237, 0.06);
+  animation: slideUp var(--transition-slow) both;
+ }
+ 
+ @keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+ }
+ 
+ /* ===== HEADER ===== */
+ .header {
   margin-bottom: 24px;
-}
-
-.header h1 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  letter-spacing: -0.5px;
-}
-
-.subtitle {
-  color: #94a3b8;
-  font-size: 0.9rem;
-  margin-top: 4px;
-}
-
-/* ===== STATS =====
- * Barra de contadores: total, pendientes y completadas.
- * Cada número tiene color semántico (amarillo=pendiente, verde=completada).
- */
-.stats {
+ }
+ 
+ .header-top {
   display: flex;
-  justify-content: space-around;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 16px;
-  padding: 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+ }
+ 
+ .header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+ }
+ 
+ .header-title h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.4px;
+ }
+ 
+ .subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  margin-left: 34px;
+ }
+ 
+ /* ===== BOTÓN LOGOUT ===== */
+ .btn-logout {
+  padding: 8px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+ }
+ 
+ .btn-logout:hover {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  background: rgba(239, 68, 68, 0.08);
+  transform: scale(1.05);
+ }
+ 
+ /* ===== STATS ===== */
+ .stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
   margin-bottom: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.stat {
+ }
+ 
+ .stat {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-}
-
-.stat-number {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #f1f5f9;
-}
-
-/* Color semántico por estado */
-.stat-number.pending { color: #f59e0b; }
-.stat-number.done    { color: #10b981; }
-
-.stat-label {
-  font-size: 0.75rem;
-  color: #64748b;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 14px 8px;
+  transition: all var(--transition-base);
+ }
+ 
+ .stat:hover {
+  border-color: rgba(124, 58, 237, 0.3);
+  background: var(--color-surface-hover);
+  transform: translateY(-2px);
+ }
+ 
+ .stat-number {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  line-height: 1;
+  transition: transform var(--transition-fast);
+ }
+ 
+ .stat:hover .stat-number { transform: scale(1.08); }
+ 
+ .stat-number.pending { color: var(--color-warning); }
+ .stat-number.done    { color: var(--color-success); }
+ 
+ .stat-label {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* ===== INPUT GROUP =====
- * Fila con input de texto, selector de prioridad y botón agregar.
- * El input ocupa el espacio restante (flex: 1).
- */
-.input-group {
+  letter-spacing: 0.8px;
+  font-weight: 500;
+ }
+ 
+ /* ===== ERROR BANNER ===== */
+ .error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  color: #FCA5A5;
+  font-size: 0.875rem;
+  animation: shake 0.4s ease;
+ }
+ 
+ @keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+ }
+ 
+ .error-close {
+  background: transparent;
+  border: none;
+  color: #FCA5A5;
+  cursor: pointer;
+  font-size: 0.875rem;
+  margin-left: auto;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+  padding: 2px 4px;
+  border-radius: 4px;
+ }
+ 
+ .error-close:hover { opacity: 1; }
+ 
+ /* ===== INPUT GROUP ===== */
+ .input-group {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
-}
-
-.input-group input {
+  position: relative;
+ }
+ 
+ .input-group input {
   flex: 1;
-  padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  color: #f1f5f9;
+  padding: 14px 18px;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
   font-size: 0.95rem;
   outline: none;
-  transition: border-color 0.2s, background 0.2s;
-}
-
-.input-group input::placeholder { color: #475569; }
-
-/* Resaltado violeta al enfocar el input */
-.input-group input:focus {
-  border-color: #7c3aed;
-  background: rgba(124, 58, 237, 0.08);
-}
-
-/* Botón agregar tarea con gradiente violeta */
-.btn-add {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  transition: all var(--transition-base);
+  min-width: 0;
+ }
+ 
+ .input-group input::placeholder {
+  color: var(--color-text-muted);
+  transition: opacity var(--transition-fast);
+ }
+ 
+ .input-group input:focus::placeholder { opacity: 0.5; }
+ 
+ .input-group input:focus {
+  border-color: var(--color-border-focus);
+  background: rgba(124, 58, 237, 0.06);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+ }
+ 
+ /* ===== BOTÓN AGREGAR ===== */
+ .btn-add {
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--color-purple), var(--color-purple-dark));
   color: white;
   border: none;
-  border-radius: 12px;
-  font-size: 1.5rem;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+  transition: all var(--transition-base);
+  box-shadow: 0 4px 16px var(--color-purple-glow);
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.btn-add:hover {
-  transform: scale(1.08);
-  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.6);
-}
-
-.btn-add:active { transform: scale(0.95); }
-
-/* Estado deshabilitado mientras se guarda */
-.btn-add:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* ===== SELECTOR DE PRIORIDAD =====
- * Dropdown con las opciones: Alta, Media, Baja.
- * Comparte altura con el input para alineación visual consistente.
- */
-.priority-select {
-  padding: 0 12px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  color: #f1f5f9;
-  font-size: 0.85rem;
-  cursor: pointer;
-  outline: none;
-  transition: border-color 0.2s;
-  height: 48px;
-}
-
-.priority-select:focus { border-color: #7c3aed; }
-
-/* Fondo oscuro para las opciones del dropdown */
-.priority-select option {
-  background: #1e1b4b;
-  color: #f1f5f9;
-}
-
-/* ===== LISTA DE TAREAS ===== */
-.task-list {
+  position: relative;
+  overflow: hidden;
+ }
+ 
+ .btn-add::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0);
+  transition: background var(--transition-fast);
+ }
+ 
+ .btn-add:hover::after { background: rgba(255, 255, 255, 0.1); }
+ .btn-add:hover { transform: scale(1.06); box-shadow: 0 6px 24px var(--color-purple-glow); }
+ .btn-add:active { transform: scale(0.94); }
+ .btn-add:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+ 
+ /* ===== LISTA DE TAREAS ===== */
+ .task-list {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-/* Cada ítem tiene animación fadeIn al aparecer */
-.task-item {
+  gap: 8px;
+  margin-bottom: 8px;
+ }
+ 
+ /* ===== ITEM DE TAREA ===== */
+ .task-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   padding: 14px 16px;
-  transition: all 0.25s ease;
-  animation: fadeIn 0.3s ease;
-}
-
-/* Animación de entrada de cada tarea */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateX(-10px); }
+  transition: all var(--transition-base);
+  animation: taskIn 0.3s var(--transition-slow) both;
+  position: relative;
+  overflow: hidden;
+ }
+ 
+ .task-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--color-purple);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  border-radius: 3px 0 0 3px;
+ }
+ 
+ .task-item:hover::before { opacity: 1; }
+ 
+ @keyframes taskIn {
+  from { opacity: 0; transform: translateX(-12px); }
   to   { opacity: 1; transform: translateX(0); }
-}
-
-/* Resaltado violeta al hacer hover sobre la tarea */
-.task-item:hover {
-  border-color: rgba(124, 58, 237, 0.4);
-  background: rgba(124, 58, 237, 0.06);
+ }
+ 
+ .task-item:hover {
+  border-color: rgba(124, 58, 237, 0.3);
+  background: var(--color-surface-hover);
   transform: translateX(4px);
-}
-
-/* Tarea completada: reducir opacidad y tachar el título */
-.task-item.completed { opacity: 0.5; }
-
-.task-item.completed .task-title {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+ }
+ 
+ /* Tarea completada */
+ .task-item.completed {
+  opacity: 0.45;
+ }
+ 
+ .task-item.completed .task-title {
   text-decoration: line-through;
-  color: #64748b;
-}
-
-.btn-check {
+  color: var(--color-text-muted);
+ }
+ 
+ /* ===== BOTÓN CHECK ===== */
+ .btn-check {
   background: transparent;
   border: none;
-  font-size: 1.2rem;
   cursor: pointer;
-  transition: transform 0.2s;
   flex-shrink: 0;
-}
-
-.btn-check:hover { transform: scale(1.2); }
-
-.task-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  transition: transform var(--transition-fast);
+ }
+ 
+ .btn-check:hover { transform: scale(1.2); }
+ .btn-check:active { transform: scale(0.9); }
+ 
+ /* ===== TÍTULO DE TAREA ===== */
+ .task-title {
   flex: 1;
-  color: #e2e8f0;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
-/* Botón eliminar oculto por defecto, visible al hacer hover en la tarea */
-.btn-delete {
+  color: #E2E8F0;
+  font-size: 0.925rem;
+  line-height: 1.45;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color var(--transition-fast);
+ }
+ 
+ /* ===== BADGE DE PRIORIDAD ===== */
+ .priority-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  letter-spacing: 0.3px;
+  transition: transform var(--transition-fast);
+ }
+ 
+ .task-item:hover .priority-badge { transform: scale(1.05); }
+ 
+ /* ===== BOTÓN ELIMINAR ===== */
+ .btn-delete {
   background: transparent;
   border: none;
   outline: none;
   cursor: pointer;
-  opacity: 0.3;
-  transition: opacity 0.2s, transform 0.2s, color 0.2s;
   flex-shrink: 0;
-  color: #64748b;
+  color: var(--color-text-muted);
   display: flex;
   align-items: center;
-  padding: 4px;
-  border-radius: 0;
-}
-
-.task-item:hover .btn-delete { opacity: 1; color: #ef4444; }
-.btn-delete:hover { transform: scale(1.1); }
-
-@media (max-width: 768px) {
+  justify-content: center;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  opacity: 0.3;
+  transition: all var(--transition-fast);
+ }
+ 
+ .task-item:hover .btn-delete { opacity: 1; color: var(--color-danger); }
+ .btn-delete:hover {
+  transform: scale(1.15);
+  background: rgba(239, 68, 68, 0.1);
+ }
+ 
+ @media (max-width: 768px) {
   .btn-delete { opacity: 0.5; }
-}
-
-.task-item:hover .btn-delete { opacity: 1; color: #ef4444; }
-.btn-delete:hover { transform: scale(1.1); }
-
-@media (max-width: 768px) {
-  .btn-delete { opacity: 0.5; }
-}
-
-/* ===== BADGE DE PRIORIDAD =====
- * Píldora de color con el nivel de prioridad de la tarea.
- * El color de fondo se aplica dinámicamente desde App.jsx.
- */
-.priority-badge {
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 20px;
-  color: #0f172a;
-  flex-shrink: 0;
-  letter-spacing: 0.3px;
-}
-
-/* ===== ESTADO VACÍO =====
- * Se muestra cuando no hay tareas en la lista.
- * Incluye ícono, título y subtítulo motivacional.
- */
-.empty {
+ }
+ 
+ /* ===== ESTADO VACÍO ===== */
+ .empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   text-align: center;
-  color: #475569;
+  color: var(--color-text-muted);
   padding: 32px 0;
   font-size: 0.95rem;
-}
-
-.empty-state {
+ }
+ 
+ .empty-state {
   text-align: center;
-  padding: 32px 0;
-}
-
-.empty-icon    { font-size: 2.5rem; margin-bottom: 8px; }
-.empty-title   { color: #e2e8f0; font-size: 1rem; font-weight: 600; margin-bottom: 4px; }
-.empty-subtitle { color: #475569; font-size: 0.85rem; }
-
-/* ===== ERROR BANNER =====
- * Mensaje de error visible con botón de cierre.
- * Aparece encima del input cuando ocurre un fallo de API o validación.
- */
-.error-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 12px;
-  padding: 12px 16px;
-  margin-bottom: 16px;
-  color: #fca5a5;
-  font-size: 0.875rem;
-  animation: fadeIn 0.2s ease;
-}
-
-.error-close {
-  background: transparent;
-  border: none;
-  color: #fca5a5;
-  cursor: pointer;
-  font-size: 0.875rem;
-  padding: 0 0 0 12px;
-  opacity: 0.7;
-  transition: opacity 0.2s;
-}
-
-.error-close:hover { opacity: 1; }
-
-/* ===== MODAL DE CONFIRMACIÓN =====
- * Overlay oscuro con card centrada para confirmar eliminación.
- * Evita borrados accidentales con dos botones: confirmar y cancelar.
- */
-.modal-overlay {
+  padding: 36px 0 28px;
+  animation: fadeIn 0.4s ease;
+ }
+ 
+ @keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+ }
+ 
+ .empty-icon {
+  font-size: 2.8rem;
+  margin-bottom: 12px;
+  display: block;
+  animation: float 3s ease-in-out infinite;
+ }
+ 
+ @keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+ }
+ 
+ .empty-title {
+  color: var(--color-text-primary);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+ }
+ 
+ .empty-subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+ }
+ 
+ /* ===== MODAL DE CONFIRMACIÓN ===== */
+ .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
+  backdrop-filter: blur(4px);
   animation: fadeIn 0.2s ease;
-}
-
-.modal {
-  background: #1e1b4b;
+ }
+ 
+ .modal {
+  background: #0F172A;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 28px 24px;
+  border-radius: var(--radius-xl);
+  padding: 32px 28px;
   text-align: center;
-  width: 280px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-}
-
-.modal p {
-  color: #e2e8f0;
+  width: min(300px, 90vw);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
+  animation: modalIn 0.3s var(--transition-slow) both;
+ }
+ 
+ @keyframes modalIn {
+  from { opacity: 0; transform: scale(0.9) translateY(16px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+ }
+ 
+ .modal p {
+  color: var(--color-text-primary);
   font-size: 1rem;
-  margin-bottom: 20px;
-}
-
-.modal-actions {
+  font-weight: 500;
+  margin-bottom: 24px;
+  line-height: 1.5;
+ }
+ 
+ .modal-actions {
   display: flex;
   gap: 10px;
   justify-content: center;
-}
-
-/* Botón de confirmación rojo — acción destructiva */
-.btn-confirm {
-  padding: 10px 20px;
-  background: #ef4444;
+ }
+ 
+ .btn-confirm {
+  flex: 1;
+  padding: 11px 20px;
+  background: var(--color-danger);
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-size: 0.9rem;
-  transition: background 0.2s, transform 0.2s;
-}
-
-.btn-confirm:hover {
-  background: #dc2626;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+ }
+ 
+ .btn-confirm:hover {
+  background: #DC2626;
   transform: scale(1.03);
-}
-
-/* Botón cancelar neutro — no destructivo */
-.btn-cancel {
-  padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #94a3b8;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background 0.2s, transform 0.2s;
-}
-
-.btn-cancel:hover {
-  background: #ffffff1f;
-  transform: scale(1.03);
-}
-
-/* ===== MOBILE OPTIMIZATIONS =====
- * En pantallas muy pequeñas se oculta el selector de prioridad
- * para evitar desbordamiento del input-group.
- */
-@media (max-width: 380px) {
-  .card { padding: 20px 16px; }
-  .header h1 { font-size: 1.5rem; }
-  .stat-number { font-size: 1.3rem; }
-  .priority-select { display: none; }
-}
-/* ===== LOGOUT =====
- * Botón discreto en el header para cerrar sesión.
- */
- .btn-logout {
-  margin-top: 8px;
-  padding: 6px 14px;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  color: #64748b;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-logout:hover {
-  border-color: #ef4444;
-  color: #ef4444;
-}
-
-/* ===== HEADER MEJORADO ===== */
-.header-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-.header-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.header-title h1 {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #f1f5f9;
-}
-
-/* ===== LOGOUT ===== */
-.btn-logout {
-  padding: 8px;
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-logout:hover {
-  border-color: #ef4444;
-  color: #ef4444;
-}
-
-/* ===== SELECTOR DE PRIORIDAD ===== */
-.priority-selector {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.priority-btn {
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
+ }
+ 
+ .btn-cancel {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 10px;
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 10px;
-  color: #64748b;
-  font-size: 0.8rem;
-  font-weight: 500;
+  padding: 11px 20px;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.priority-btn:hover {
-  border-color: rgba(255,255,255,0.2);
-  color: #94a3b8;
-}
-
-.priority-btn.active {
-  font-weight: 600;
-}
-
-/* ===== BADGE PRIORIDAD CON ICONO ===== */
-.priority-badge {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 20px;
-  flex-shrink: 0;
-}
-
-/* ===== SPIN ANIMATION ===== */
-.spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+ }
+ 
+ .btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.03);
+ }
+ 
+ /* ===== FOOTER ===== */
+ .footer {
+  text-align: center;
+  color: rgba(100, 116, 139, 0.5);
+  font-size: 0.72rem;
+  margin-top: 20px;
+  letter-spacing: 0.3px;
+ }
+ 
+ /* ===== SPIN ANIMATION ===== */
+ .spin { animation: spin 0.8s linear infinite; }
+ 
+ @keyframes spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
-}
+ }
+ 
+ /* ===== MOBILE ===== */
+ @media (max-width: 480px) {
+  body { padding: 16px 12px 32px; }
+  .card { padding: 22px 18px 28px; border-radius: 20px; }
+  .header-title h1 { font-size: 1.3rem; }
+  .stat-number { font-size: 1.5rem; }
+  .task-title { font-size: 0.875rem; }
+  .btn-delete { opacity: 0.6; }
+ }
+ 
+ @media (max-width: 360px) {
+  .priority-badge { display: none; }
+ }
