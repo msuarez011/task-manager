@@ -1,218 +1,231 @@
 /**
  * @file Auth.jsx
- * @description Componente de autenticación con diseño moderno 2026.
+ * @description Componente de autenticación modernizado 2026.
+ * Coherente con el design system de App.css — tokens CSS, microinteracciones
+ * y animaciones fluidas. Mantiene toda la seguridad implementada.
  * @author Marcelo Suárez
- * @date 2026-03-31
+ * @date 2026-04-02
  */
 
-import { useState } from "react";
-import { supabase } from "../supabaseClient";
-import { Eye, EyeOff } from "lucide-react";
+import { useState } from 'react'
+import { supabase } from '../supabaseClient'
+import { Eye, EyeOff, ClipboardList, AlertCircle, CheckCircle2 } from 'lucide-react'
 
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirm] = useState("");
-  const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
-  const [showPass, setShowPass] = useState(false);
+  const [isLogin, setIsLogin]         = useState(true)
+  const [email, setEmail]             = useState('')
+  const [password, setPassword]       = useState('')
+  const [confirmPassword, setConfirm] = useState('')
+  const [name, setName]               = useState('')
+  const [loading, setLoading]         = useState(false)
+  const [error, setError]             = useState('')
+  const [message, setMessage]         = useState('')
+  const [showPass, setShowPass]       = useState(false)
 
   const handleSubmit = async () => {
-    setError("");
-    setMessage("");
-    if (!email || !password) return setError("Completa todos los campos.");
-    if (!email.includes("@")) return setError("Ingresa un correo válido.");
-    if (password.length < 6)
-      return setError("La contraseña debe tener al menos 6 caracteres.");
-    if (!isLogin && !name.trim()) return setError("Ingresa tu nombre.");
-    if (!isLogin && password !== confirmPassword)
-      return setError("Las contraseñas no coinciden.");
+    setError('')
+    setMessage('')
+    if (!email || !password) return setError('Completa todos los campos.')
+    if (!email.includes('@')) return setError('Ingresa un correo válido.')
+    if (password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres.')
+    if (!isLogin && !name.trim()) return setError('Ingresa tu nombre.')
+    if (!isLogin && password !== confirmPassword) return setError('Las contraseñas no coinciden.')
 
-    setLoading(true);
+    setLoading(true)
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) throw error
       } else {
         const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { full_name: name.trim() } },
-        });
-        if (error) throw error;
-        setMessage("¡Cuenta creada! Ya puedes iniciar sesión.");
-        setIsLogin(true);
+          email, password,
+          options: { data: { full_name: name.trim() } }
+        })
+        if (error) throw error
+        setMessage('¡Cuenta creada! Ya puedes iniciar sesión.')
+        setIsLogin(true)
       }
     } catch (err) {
-      const msg = err.message || "";
-      if (msg.includes("Invalid login"))
-        setError("Correo o contraseña incorrectos.");
-      else if (msg.includes("already registered"))
-        setError("Este correo ya está registrado.");
-      else if (msg.includes("not confirmed"))
-        setError("Confirma tu correo antes de iniciar sesión.");
-      else setError(msg || "Error de autenticación.");
+      const msg = err.message || ''
+      if (msg.includes('Invalid login')) setError('Correo o contraseña incorrectos.')
+      else if (msg.includes('already registered')) setError('Este correo ya está registrado.')
+      else if (msg.includes('not confirmed')) setError('Confirma tu correo antes de iniciar sesión.')
+      else setError(msg || 'Error de autenticación.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const switchMode = () => {
-    setIsLogin(!isLogin);
-    setError("");
-    setMessage("");
-    setEmail("");
-    setPassword("");
-    setConfirm("");
-    setName("");
-  };
+    setIsLogin(!isLogin)
+    setError('')
+    setMessage('')
+    setEmail('')
+    setPassword('')
+    setConfirm('')
+    setName('')
+  }
+
+  const strengthLevel = password.length === 0 ? 0 : password.length < 6 ? 1 : password.length < 10 ? 2 : 3
+  const strengthLabel = ['', 'Débil', 'Media', 'Fuerte'][strengthLevel]
+  const strengthColor = ['', '#ef4444', '#f59e0b', '#10b981'][strengthLevel]
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
         .auth-root {
           min-height: 100vh;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #080810;
-          font-family: 'DM Sans', sans-serif;
-          padding: 20px;
+          background: linear-gradient(145deg, #080B14 0%, #0F172A 100%);
+          font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+          padding: 24px 16px;
           overflow-y: auto;
+          position: relative;
         }
 
-        .auth-bg {
-          position: fixed;
-          inset: 0;
-          z-index: 0;
-          overflow: hidden;
-          pointer-events: none;
-        }
-
-        .auth-bg::before {
+        /* Fondo coherente con App.css */
+        .auth-root::before {
           content: '';
-          position: absolute;
-          top: -30%;
-          left: -20%;
-          width: 700px;
-          height: 700px;
-          background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
-          animation: drift1 12s ease-in-out infinite alternate;
-        }
-
-        .auth-bg::after {
-          content: '';
-          position: absolute;
-          bottom: -20%;
-          right: -10%;
-          width: 600px;
-          height: 600px;
-          background: radial-gradient(circle, rgba(236,72,153,0.1) 0%, transparent 70%);
-          animation: drift2 15s ease-in-out infinite alternate;
-        }
-
-        @keyframes drift1 {
-          from { transform: translate(0,0) scale(1); }
-          to   { transform: translate(60px,40px) scale(1.1); }
-        }
-
-        @keyframes drift2 {
-          from { transform: translate(0,0) scale(1); }
-          to   { transform: translate(-40px,-60px) scale(1.15); }
-        }
-
-        .auth-grid {
           position: fixed;
           inset: 0;
           background-image:
-            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-          background-size: 60px 60px;
-          z-index: 0;
+            radial-gradient(ellipse at 15% 15%, rgba(99,102,241,0.12) 0%, transparent 50%),
+            radial-gradient(ellipse at 85% 85%, rgba(124,58,237,0.08) 0%, transparent 50%);
           pointer-events: none;
+          z-index: 0;
+        }
+
+        /* Grid sutil */
+        .auth-root::after {
+          content: '';
+          position: fixed;
+          inset: 0;
+          background-image:
+            linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+          background-size: 64px 64px;
+          pointer-events: none;
+          z-index: 0;
         }
 
         .auth-card {
           position: relative;
           z-index: 1;
           width: 100%;
-          max-width: 400px;
-          background: rgba(255,255,255,0.03);
+          max-width: 420px;
+          background: rgba(15, 23, 42, 0.85);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
           border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 28px;
-          padding: 44px 36px;
-          backdrop-filter: blur(20px);
-          animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+          border-radius: 24px;
+          padding: 40px 36px 36px;
+          box-shadow:
+            0 0 0 1px rgba(255,255,255,0.04) inset,
+            0 32px 64px rgba(0,0,0,0.5),
+            0 0 80px rgba(99,102,241,0.06);
+          animation: authIn 0.5s cubic-bezier(0.16,1,0.3,1) both;
         }
 
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to   { opacity: 1; transform: translateY(0); }
+        @keyframes authIn {
+          from { opacity: 0; transform: translateY(20px) scale(0.98); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
+        /* Logo */
         .auth-logo {
           display: flex;
           align-items: center;
           gap: 10px;
-          margin-bottom: 32px;
+          margin-bottom: 28px;
         }
 
         .auth-logo-icon {
-          width: 42px;
-          height: 42px;
-          background: linear-gradient(135deg, #6366f1, #ec4899);
-          border-radius: 12px;
+          width: 40px;
+          height: 40px;
+          background: linear-gradient(135deg, #7C3AED, #6366F1);
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 20px;
+          box-shadow: 0 4px 16px rgba(124,58,237,0.4);
         }
 
         .auth-logo-text {
-          font-family: 'Syne', sans-serif;
-          font-size: 18px;
+          font-size: 17px;
           font-weight: 700;
-          color: #fff;
+          color: #F1F5F9;
+          letter-spacing: -0.3px;
         }
 
+        /* Título */
         .auth-title {
-           font-family: 'DM Sans', sans-serif;
-           font-size: 26px;
-           font-weight: 600;
-           color: #fff;
-           letter-spacing: -0.3px;
-           margin-bottom: 6px;
+          font-size: 24px;
+          font-weight: 700;
+          color: #F1F5F9;
+          letter-spacing: -0.4px;
+          margin-bottom: 6px;
+          line-height: 1.2;
         }
 
         .auth-subtitle {
           font-size: 14px;
           color: rgba(255,255,255,0.35);
           margin-bottom: 28px;
-          font-weight: 300;
+          font-weight: 400;
+          line-height: 1.5;
         }
 
-        .auth-field {
+        /* Mensajes */
+        .auth-error {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(239,68,68,0.1);
+          border: 1px solid rgba(239,68,68,0.25);
+          border-radius: 10px;
+          padding: 11px 14px;
+          color: #FCA5A5;
+          font-size: 13px;
+          margin-bottom: 16px;
+          animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+          0%,100% { transform: translateX(0); }
+          20%      { transform: translateX(-5px); }
+          40%      { transform: translateX(5px); }
+          60%      { transform: translateX(-3px); }
+          80%      { transform: translateX(3px); }
+        }
+
+        .auth-success {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(16,185,129,0.1);
+          border: 1px solid rgba(16,185,129,0.25);
+          border-radius: 10px;
+          padding: 11px 14px;
+          color: #6EE7B7;
+          font-size: 13px;
           margin-bottom: 16px;
         }
 
+        /* Campos */
+        .auth-field { margin-bottom: 14px; }
+
         .auth-label {
           display: block;
-          font-size: 12px;
-          font-weight: 500;
-          color: rgba(255,255,255,0.45);
-          letter-spacing: 0.5px;
+          font-size: 11px;
+          font-weight: 600;
+          color: rgba(255,255,255,0.4);
+          letter-spacing: 0.8px;
           text-transform: uppercase;
-          margin-bottom: 8px;
+          margin-bottom: 7px;
         }
 
         .auth-input-wrap { position: relative; }
@@ -220,12 +233,12 @@ export default function Auth() {
         .auth-input {
           width: 100%;
           padding: 13px 16px;
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 12px;
-          color: #fff;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 15px;
+          background: rgba(255,255,255,0.04);
+          border: 1.5px solid rgba(255,255,255,0.08);
+          border-radius: 10px;
+          color: #F1F5F9;
+          font-family: 'Inter', system-ui, sans-serif;
+          font-size: 14.5px;
           outline: none;
           transition: all 0.2s;
         }
@@ -233,29 +246,35 @@ export default function Auth() {
         .auth-input::placeholder { color: rgba(255,255,255,0.2); }
 
         .auth-input:focus {
-          border-color: rgba(99,102,241,0.6);
-          background: rgba(99,102,241,0.08);
-          box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+          border-color: rgba(124,58,237,0.7);
+          background: rgba(124,58,237,0.06);
+          box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
         }
 
-        .auth-input.has-toggle { padding-right: 48px; }
+        .auth-input.has-toggle { padding-right: 46px; }
 
         .auth-toggle-pass {
           position: absolute;
-          right: 14px;
+          right: 13px;
           top: 50%;
           transform: translateY(-50%);
           background: none;
           border: none;
-          color: rgba(255,255,255,0.3);
+          color: rgba(255,255,255,0.25);
           cursor: pointer;
-          font-size: 16px;
-          transition: color 0.2s;
           padding: 4px;
+          border-radius: 6px;
+          transition: all 0.15s;
+          display: flex;
+          align-items: center;
         }
 
-        .auth-toggle-pass:hover { color: rgba(255,255,255,0.7); }
+        .auth-toggle-pass:hover {
+          color: rgba(255,255,255,0.7);
+          background: rgba(255,255,255,0.06);
+        }
 
+        /* Fortaleza de contraseña */
         .password-strength {
           display: flex;
           gap: 4px;
@@ -270,139 +289,146 @@ export default function Auth() {
           transition: background 0.3s;
         }
 
-        .strength-bar.weak   { background: #ef4444; }
-        .strength-bar.medium { background: #f59e0b; }
-        .strength-bar.strong { background: #10b981; }
-
         .strength-label {
           font-size: 11px;
           color: rgba(255,255,255,0.3);
-          margin-top: 4px;
+          margin-top: 5px;
           text-align: right;
+          transition: color 0.3s;
         }
 
+        /* Botón principal */
         .auth-btn {
           width: 100%;
           padding: 14px;
-          margin-top: 8px;
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+          margin-top: 10px;
+          background: linear-gradient(135deg, #7C3AED, #6366F1);
           border: none;
-          border-radius: 12px;
+          border-radius: 10px;
           color: #fff;
-          font-family: 'Syne', sans-serif;
+          font-family: 'Inter', system-ui, sans-serif;
           font-size: 15px;
-          font-weight: 700;
+          font-weight: 600;
+          letter-spacing: -0.2px;
           cursor: pointer;
           transition: all 0.2s;
-          box-shadow: 0 4px 20px rgba(99,102,241,0.3);
+          box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+          position: relative;
+          overflow: hidden;
         }
 
-        .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(99,102,241,0.4); }
-        .auth-btn:active { transform: scale(0.98); }
-        .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .auth-btn::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: rgba(255,255,255,0);
+          transition: background 0.15s;
+        }
 
+        .auth-btn:hover::after { background: rgba(255,255,255,0.08); }
+        .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(124,58,237,0.45); }
+        .auth-btn:active { transform: scale(0.98); }
+        .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* Switch modo */
         .auth-switch {
           text-align: center;
           margin-top: 20px;
-          font-size: 14px;
-          color: rgba(255,255,255,0.3);
+          font-size: 13.5px;
+          color: rgba(255,255,255,0.28);
         }
 
         .auth-switch-btn {
           background: none;
           border: none;
-          color: #818cf8;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 14px;
+          color: #818CF8;
+          font-family: 'Inter', system-ui, sans-serif;
+          font-size: 13.5px;
           font-weight: 500;
           cursor: pointer;
           text-decoration: underline;
           text-underline-offset: 3px;
-          transition: color 0.2s;
+          transition: color 0.15s;
           margin-left: 4px;
         }
 
-        .auth-switch-btn:hover { color: #a5b4fc; }
+        .auth-switch-btn:hover { color: #A5B4FC; }
 
-        .auth-error {
-          background: rgba(239,68,68,0.1);
-          border: 1px solid rgba(239,68,68,0.25);
-          border-radius: 10px;
-          padding: 12px 14px;
-          color: #fca5a5;
-          font-size: 13px;
-          margin-bottom: 16px;
-        }
-
-        .auth-success {
-          background: rgba(34,197,94,0.1);
-          border: 1px solid rgba(34,197,94,0.25);
-          border-radius: 10px;
-          padding: 12px 14px;
-          color: #86efac;
-          font-size: 13px;
-          margin-bottom: 16px;
-        }
-
+        /* Términos */
         .auth-terms {
-          font-size: 12px;
-          color: rgba(255,255,255,0.2);
+          font-size: 11.5px;
+          color: rgba(255,255,255,0.18);
           text-align: center;
-          margin-top: 16px;
-          line-height: 1.5;
+          margin-top: 14px;
+          line-height: 1.6;
         }
 
+        /* Footer */
         .auth-footer {
           text-align: center;
           margin-top: 24px;
           font-size: 11px;
-          color: rgba(255,255,255,0.12);
+          color: rgba(255,255,255,0.1);
+          letter-spacing: 0.3px;
         }
 
+        /* Mobile */
         @media (max-width: 480px) {
-          .auth-card { padding: 36px 24px; }
-          .auth-title { font-size: 22px; }
+          .auth-card { padding: 32px 22px 28px; border-radius: 20px; }
+          .auth-title { font-size: 21px; }
         }
       `}</style>
 
       <div className="auth-root">
-        <div className="auth-bg" />
-        <div className="auth-grid" />
-
         <div className="auth-card">
+
+          {/* Logo */}
           <div className="auth-logo">
-            <div className="auth-logo-icon">📝</div>
+            <div className="auth-logo-icon">
+              <ClipboardList size={20} color="white" />
+            </div>
             <span className="auth-logo-text">Task Manager</span>
           </div>
 
+          {/* Título */}
           <h1 className="auth-title">
-            {isLogin ? "Bienvenido de nuevo" : "Crea tu cuenta"}
+            {isLogin ? 'Bienvenido de nuevo' : 'Crea tu cuenta'}
           </h1>
           <p className="auth-subtitle">
             {isLogin
-              ? "Ingresa tus credenciales para continuar"
-              : "Únete y empieza a organizar tu día"}
+              ? 'Ingresa tus credenciales para continuar'
+              : 'Únete y empieza a organizar tu día'}
           </p>
 
-          {error && <div className="auth-error">⚠️ {error}</div>}
-          {message && <div className="auth-success">✅ {message}</div>}
+          {/* Mensajes */}
+          {error && (
+            <div className="auth-error">
+              <AlertCircle size={14} />
+              {error}
+            </div>
+          )}
+          {message && (
+            <div className="auth-success">
+              <CheckCircle2 size={14} />
+              {message}
+            </div>
+          )}
 
+          {/* Nombre — solo en registro */}
           {!isLogin && (
             <div className="auth-field">
               <label className="auth-label">Nombre completo</label>
               <input
                 className="auth-input"
                 type="text"
-                placeholder="Tu nombre Completo"
+                placeholder="Tu nombre completo"
                 value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  setError("");
-                }}
+                onChange={(e) => { setName(e.target.value); setError('') }}
               />
             </div>
           )}
 
+          {/* Email */}
           <div className="auth-field">
             <label className="auth-label">Correo electrónico</label>
             <input
@@ -410,29 +436,22 @@ export default function Auth() {
               type="email"
               placeholder="tu@correo.com"
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setError("");
-              }}
-              onKeyDown={(e) => e.key === "Enter" && !loading && handleSubmit()}
+              onChange={(e) => { setEmail(e.target.value); setError('') }}
+              onKeyDown={(e) => e.key === 'Enter' && !loading && handleSubmit()}
             />
           </div>
 
+          {/* Contraseña */}
           <div className="auth-field">
             <label className="auth-label">Contraseña</label>
             <div className="auth-input-wrap">
               <input
                 className="auth-input has-toggle"
-                type={showPass ? "text" : "password"}
+                type={showPass ? 'text' : 'password'}
                 placeholder="Mínimo 6 caracteres"
                 value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setError("");
-                }}
-                onKeyDown={(e) =>
-                  e.key === "Enter" && !loading && handleSubmit()
-                }
+                onChange={(e) => { setPassword(e.target.value); setError('') }}
+                onKeyDown={(e) => e.key === 'Enter' && !loading && handleSubmit()}
               />
               <button
                 className="auth-toggle-pass"
@@ -440,78 +459,47 @@ export default function Auth() {
                 type="button"
                 aria-label="Mostrar contraseña"
               >
-                {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
+
+            {/* Indicador de fortaleza solo en registro */}
             {!isLogin && password.length > 0 && (
               <>
                 <div className="password-strength">
-                  <div
-                    className={`strength-bar ${
-                      password.length >= 1
-                        ? password.length < 6
-                          ? "weak"
-                          : password.length < 10
-                          ? "medium"
-                          : "strong"
-                        : ""
-                    }`}
-                  />
-                  <div
-                    className={`strength-bar ${
-                      password.length >= 6
-                        ? password.length < 10
-                          ? "medium"
-                          : "strong"
-                        : ""
-                    }`}
-                  />
-                  <div
-                    className={`strength-bar ${
-                      password.length >= 10 ? "strong" : ""
-                    }`}
-                  />
+                  {[1, 2, 3].map(i => (
+                    <div
+                      key={i}
+                      className="strength-bar"
+                      style={{ background: strengthLevel >= i ? strengthColor : undefined }}
+                    />
+                  ))}
                 </div>
-                <p className="strength-label">
-                  {password.length < 6
-                    ? "Débil"
-                    : password.length < 10
-                    ? "Media"
-                    : "Fuerte"}
+                <p className="strength-label" style={{ color: strengthColor }}>
+                  {strengthLabel}
                 </p>
               </>
             )}
           </div>
 
+          {/* Confirmar contraseña — solo en registro */}
           {!isLogin && (
             <div className="auth-field">
               <label className="auth-label">Confirmar contraseña</label>
               <input
                 className="auth-input"
-                type={showPass ? "text" : "password"}
+                type={showPass ? 'text' : 'password'}
                 placeholder="Repite tu contraseña"
                 value={confirmPassword}
-                onChange={(e) => {
-                  setConfirm(e.target.value);
-                  setError("");
-                }}
-                onKeyDown={(e) =>
-                  e.key === "Enter" && !loading && handleSubmit()
-                }
+                onChange={(e) => { setConfirm(e.target.value); setError('') }}
+                onKeyDown={(e) => e.key === 'Enter' && !loading && handleSubmit()}
               />
             </div>
           )}
 
-          <button
-            className="auth-btn"
-            onClick={handleSubmit}
-            disabled={loading}
-          >
-            {loading
-              ? "Procesando..."
-              : isLogin
-              ? "Iniciar sesión"
-              : "Crear cuenta gratis"}
+          {/* Botón */}
+          <button className="auth-btn" onClick={handleSubmit} disabled={loading}>
+            {loading ? 'Procesando...' : isLogin ? 'Iniciar sesión' : 'Crear cuenta gratis'}
           </button>
 
           {!isLogin && (
@@ -520,11 +508,11 @@ export default function Auth() {
             </p>
           )}
 
-          {/* Link para cambiar modo — abajo del botón */}
+          {/* Switch */}
           <div className="auth-switch">
-            {isLogin ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"}
+            {isLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}
             <button className="auth-switch-btn" onClick={switchMode}>
-              {isLogin ? "Regístrate gratis" : "Inicia sesión"}
+              {isLogin ? 'Regístrate gratis' : 'Inicia sesión'}
             </button>
           </div>
 
@@ -532,5 +520,5 @@ export default function Auth() {
         </div>
       </div>
     </>
-  );
+  )
 }
