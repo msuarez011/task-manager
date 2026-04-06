@@ -57,17 +57,13 @@ function App() {
   const [error, setError] = useState("");
   const [deleteId, setDeleteId] = useState(null);
 
+  // Ping al backend cada 14 minutos para evitar cold start
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-    return () => subscription.unsubscribe();
+    const keepAlive = setInterval(() => {
+      fetch(import.meta.env.VITE_API_URL + "/health").catch(() => {}); // silencioso si falla
+    }, 14 * 60 * 1000);
+
+    return () => clearInterval(keepAlive);
   }, []);
 
   useEffect(() => {

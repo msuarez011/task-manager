@@ -37,6 +37,11 @@ const limiter = rateLimit({
   message: { error: 'Demasiadas peticiones. Intenta de nuevo en 15 minutos.' }
 })
 
+// Endpoint de health check para keep-alive
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok' })
+})
+
 app.use('/api/', limiter)
 app.use(express.json())
 app.use('/api/tasks', taskRoutes)
