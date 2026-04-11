@@ -66,6 +66,20 @@ function App() {
     return () => clearInterval(keepAlive);
   }, []);
 
+  // Escuchar cambios de sesión de Supabase Auth
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
   useEffect(() => {
     if (session) fetchTasks();
   }, [session]);
