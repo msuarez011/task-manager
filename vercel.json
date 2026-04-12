@@ -11,8 +11,11 @@
       "use": "@vercel/node"
     }
   ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/(.*)", "dest": "/frontend/$1" }
+  "rewrites": [
+    { "source": "/api/tasks/:id/toggle", "destination": "/api/tasks/[id]/toggle" },
+    { "source": "/api/tasks/:id", "destination": "/api/tasks/[id]/index" },
+    { "source": "/api/tasks", "destination": "/api/tasks/index" },
+    { "source": "/api/categories", "destination": "/api/categories/index" },
+    { "source": "/(.*)", "destination": "/frontend/$1" }
   ]
 }
